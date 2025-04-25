@@ -93,17 +93,24 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
 )
 
+# glog
+find_package(Glog REQUIRED)
+include_directories(${GLOG_INCLUDE_DIR})
+
+# gflags
+find_package(Gflags REQUIRED)
+include_directories(${GFLAGS_INCLUDE_DIR})
+
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(Sophus REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread)
 
 # Define the catkin package
 catkin_package(
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs message_runtime cv_bridge vikit_common vikit_ros image_transport
-  DEPENDS EIGEN3 PCL OpenCV Sophus
-)
+  DEPENDS EIGEN3 PCL OpenCV 
+)#Sophus
 
 # Include directories for dependencies
 include_directories(
@@ -111,7 +118,7 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  ${Sophus_INCLUDE_DIRS}
+  # ${Sophus_INCLUDE_DIRS}
   include
 )
 
@@ -135,7 +142,8 @@ target_link_libraries(fastlivo_mapping
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  ${Sophus_LIBRARIES}
+  glog::glog
+  ${GFLAGS_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 

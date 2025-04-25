@@ -18,12 +18,12 @@ which is included as part of this source code package.
 #include <utils/color.h>
 #include <opencv2/opencv.hpp>
 #include <sensor_msgs/Imu.h>
-#include <sophus/se3.h>
 #include <tf/transform_broadcaster.h>
+#include <vikit/math_utils.h>
 
 using namespace std;
 using namespace Eigen;
-using namespace Sophus;
+// using namespace Sophus;
 
 #define print_line std::cout << __FILE__ << ", " << __LINE__ << std::endl;
 #define G_m_s2 (9.81)   // Gravaty const in GuangDong/China
@@ -34,6 +34,8 @@ using namespace Sophus;
 #define VEC_FROM_ARRAY(v) v[0], v[1], v[2]
 #define MAT_FROM_ARRAY(v) v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]
 #define DEBUG_FILE_DIR(name) (string(string(ROOT_DIR) + "Log/" + name))
+
+using SE3 = Sophus::SE3d;
 
 enum LID_TYPE
 {
@@ -240,4 +242,10 @@ auto set_pose6d(const double t, const Matrix<T, 3, 1> &a, const Matrix<T, 3, 1> 
   return move(rot_kp);
 }
 
+inline Sophus::SO3d Mat3ToSO3(const Eigen::Matrix<double, 3, 3> &m) {
+  /// 对R做归一化，防止sophus里的检查不过
+  Eigen::Quaterniond q(m.template cast<double>());
+  q.normalize();
+  return Sophus::SO3d(q);
+}
 #endif
