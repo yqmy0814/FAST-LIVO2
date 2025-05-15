@@ -87,11 +87,11 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   message_generation
   eigen_conversions
-  vikit_common
-  vikit_ros
   cv_bridge
   image_transport
 )
+
+add_subdirectory(vikit_common)
 
 # glog
 find_package(Glog REQUIRED)
@@ -108,7 +108,7 @@ find_package(Boost REQUIRED COMPONENTS thread)
 
 # Define the catkin package
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs message_runtime cv_bridge vikit_common vikit_ros image_transport
+  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs message_runtime cv_bridge image_transport
   DEPENDS EIGEN3 PCL OpenCV 
 )
 
@@ -119,6 +119,7 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   include
+  vikit_common/include
 )
 
 # Add libraries
@@ -144,6 +145,7 @@ target_link_libraries(fastlivo_mapping
   glog::glog
   ${GFLAGS_LIBRARIES}
   ${Boost_LIBRARIES}
+  vikit_common
 )
 
 # Link mimalloc if found

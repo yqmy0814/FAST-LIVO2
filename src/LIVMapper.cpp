@@ -13,6 +13,7 @@ which is included as part of this source code package.
 #include "LIVMapper.h"
 
 #include <glog/logging.h>
+#include <yaml-cpp/yaml.h>
 
 LIVMapper::LIVMapper(ros::NodeHandle &nh)
     : ext_t_(0, 0, 0), ext_r_(M3D::Identity()) {
@@ -124,7 +125,11 @@ void LIVMapper::initializeComponents() {
   voxelmap_manager_->extT_ << VEC_FROM_ARRAY(extrin_t_);
   voxelmap_manager_->extR_ << MAT_FROM_ARRAY(extrin_r_);
   // 载入相机参数
-  if (!vk::camera_loader::loadFromRosNs("laserMapping", vio_manager_->cam_))
+  // if (!vk::camera_loader::loadFromRosNs("laserMapping", vio_manager_->cam_))
+  //   throw std::runtime_error("Camera model not correctly specified.");
+  std::string file_name = std::string(ROOT_DIR) + "config/camera_pinhole.yaml";
+  YAML::Node camera_config = YAML::LoadFile(file_name);
+  if (!vk::camera_loader::loadFromYaml(camera_config, vio_manager_->cam_))
     throw std::runtime_error("Camera model not correctly specified.");
   // 视觉里程计初始化
   vio_manager_->grid_size_ = grid_size_;
@@ -300,7 +305,7 @@ void LIVMapper::handleVIO() {
 
   std::cout << "[ VIO ] Raw feature num: " << pcl_w_wait_pub_->points.size()
             << std::endl;
-   
+
   if (fabs((Lidar_measures_.last_lio_update_time - first_lidar_time_) -
            plot_time_) < (frame_cnt_ / 2 * 0.1)) {
     vio_manager_->plot_flag_ = true;

@@ -19,7 +19,7 @@ which is included as part of this source code package.
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <nav_msgs/Path.h>
-#include <vikit/camera_loader.h>
+#include <yaml_loader.h>
 
 class LIVMapper
 {
