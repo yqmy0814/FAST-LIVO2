@@ -19,8 +19,8 @@ which is included as part of this source code package.
 #include <nav_msgs/Odometry.h>
 #include <utils/so3_math.h>
 
-const bool time_list(PointType &x,
-                     PointType &y); //{return (x.curvature < y.curvature);};
+const bool time_list(PointXYZIN &x,
+                     PointXYZIN &y); //{return (x.curvature < y.curvature);};
 
 /// *************IMU Process and undistortion
 class ImuProcess
@@ -46,46 +46,46 @@ public:
   void disable_gravity_est();
   void disable_bias_est();
   void disable_exposure_est();
-  void Process2(LidarMeasureGroup &lidar_meas, StatesGroup &stat, PointCloudXYZI::Ptr cur_pcl_un_);
-  void UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_inout, PointCloudXYZI &pcl_out);
+  void Process2(LidarMeasureGroup &lidar_meas, StatesGroup &stat, PointCloudXYZIN::Ptr cur_pcl_un_);
+  void UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_inout, PointCloudXYZIN &pcl_out);
 
-  ofstream fout_imu;
-  double IMU_mean_acc_norm;
-  V3D unbiased_gyr;
+  ofstream fout_imu_;
+  double imu_mean_acc_norm_;
+  V3D unbiased_gyr_;
 
-  V3D cov_acc;
-  V3D cov_gyr;
-  V3D cov_bias_gyr;
-  V3D cov_bias_acc;
-  double cov_inv_expo;
-  double first_lidar_time;
-  bool imu_time_init = false;
-  bool imu_need_init = true;
-  M3D Eye3d;
-  V3D Zero3d;
-  int lidar_type;
+  V3D cov_acc_;
+  V3D cov_gyr_;
+  V3D cov_bias_gyr_;
+  V3D cov_bias_acc_;
+  double cov_inv_expo_;
+  double first_lidar_time_;
+  bool imu_time_init_ = false;
+  bool imu_need_init_ = true;
+  M3D eye3d_;
+  V3D zero3d_;
+  int lidar_type_;
 
 private:
   void IMU_init(const MeasureGroup &meas, StatesGroup &state, int &N);
-  void Forward_without_imu(LidarMeasureGroup &meas, StatesGroup &state_inout, PointCloudXYZI &pcl_out);
-  PointCloudXYZI pcl_wait_proc;
-  sensor_msgs::ImuConstPtr last_imu;
-  PointCloudXYZI::Ptr cur_pcl_un_;
-  vector<Pose6D> IMUpose;
-  M3D Lid_rot_to_IMU;
-  V3D Lid_offset_to_IMU;
-  V3D mean_acc;
-  V3D mean_gyr;
-  V3D angvel_last;
-  V3D acc_s_last;
-  double last_prop_end_time;
-  double time_last_scan;
-  int init_iter_num = 1, MAX_INI_COUNT = 20;
-  bool b_first_frame = true;
-  bool imu_en = true;
-  bool gravity_est_en = true;
-  bool ba_bg_est_en = true;
-  bool exposure_estimate_en = true;
+  void Forward_without_imu(LidarMeasureGroup &meas, StatesGroup &state_inout, PointCloudXYZIN &pcl_out);
+  PointCloudXYZIN pcl_wait_proc_;
+  sensor_msgs::ImuConstPtr last_imu_;
+  PointCloudXYZIN::Ptr cur_pcl_un_;
+  vector<Pose6D> imu_pose_;
+  M3D lidar_rot_to_imu_;
+  V3D lidar_offset_to_imu_;
+  V3D mean_acc_;
+  V3D mean_gyr_;
+  V3D angvel_last_;
+  V3D acc_s_last_;
+  double last_prop_end_time_;
+  double time_last_scan_;
+  int init_iter_num_ = 1, max_ini_count_ = 20;
+  bool b_first_frame_ = true;
+  bool imu_en_ = true;
+  bool gravity_est_en_ = true;
+  bool ba_bg_est_en_ = true;
+  bool exposure_estimate_en_ = true;
 };
 typedef std::shared_ptr<ImuProcess> ImuProcessPtr;
 #endif

@@ -5,11 +5,11 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-typedef pcl::PointXYZINormal PointType;
+typedef pcl::PointXYZINormal PointXYZIN;
 typedef pcl::PointXYZRGB PointTypeRGB;
 typedef pcl::PointXYZRGBA PointTypeRGBA;
-typedef pcl::PointCloud<PointType> PointCloudXYZI;
-typedef std::vector<PointType, Eigen::aligned_allocator<PointType>> PointVector;
+typedef pcl::PointCloud<PointXYZIN> PointCloudXYZIN;
+typedef std::vector<PointXYZIN, Eigen::aligned_allocator<PointXYZIN>> PointVector;
 typedef pcl::PointCloud<PointTypeRGB> PointCloudXYZRGB;
 typedef pcl::PointCloud<PointTypeRGBA> PointCloudXYZRGBA;
 

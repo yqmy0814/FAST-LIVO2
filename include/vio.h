@@ -83,53 +83,53 @@ public:
 class VIOManager
 {
 public:
-  int grid_size;
-  vk::AbstractCamera *cam;
-  vk::PinholeCamera *pinhole_cam;
-  StatesGroup *state;
-  StatesGroup *state_propagat;
-  M3D Rli, Rci, Rcl, Rcw, Jdphi_dR, Jdp_dt, Jdp_dR;
-  V3D Pli, Pci, Pcl, Pcw;
-  vector<int> grid_num;
-  vector<int> map_index;
-  vector<int> border_flag;
-  vector<int> update_flag;
-  vector<float> map_dist;
-  vector<float> scan_value;
-  vector<float> patch_buffer;
-  bool normal_en, inverse_composition_en, exposure_estimate_en, raycast_en, has_ref_patch_cache;
-  bool ncc_en = false, colmap_output_en = false;
+  int grid_size_;
+  vk::AbstractCamera *cam_;
+  vk::PinholeCamera *pinhole_cam_;
+  StatesGroup *state_;
+  StatesGroup *state_propagat_;
+  M3D Rli_, Rci_, Rcl_, Rcw_, Jdphi_dR_, Jdp_dt_, Jdp_dR_;
+  V3D Pli_, Pci_, Pcl_, Pcw_;
+  vector<int> grid_num_;
+  vector<int> map_index_;
+  vector<int> border_flag_;
+  vector<int> update_flag_;
+  vector<float> map_dist_;
+  vector<float> scan_value_;
+  vector<float> patch_buffer_;
+  bool normal_en_, inverse_composition_en_, exposure_estimate_en_, raycast_en_, has_ref_patch_cache_;
+  bool ncc_en_ = false, colmap_output_en_ = false;
 
-  int width, height, grid_n_width, grid_n_height, length;
-  double image_resize_factor;
-  double fx, fy, cx, cy;
-  int patch_pyrimid_level, patch_size, patch_size_total, patch_size_half, border, warp_len;
-  int max_iterations, total_points;
+  int width_, height_, grid_n_width_, grid_n_height_, length_;
+  double image_resize_factor_;
+  double fx_, fy_, cx_, cy_;
+  int patch_pyrimid_level_, patch_size_, patch_size_total_, patch_size_half_, border_, warp_len_;
+  int max_iterations_, total_points_;
 
-  double img_point_cov, outlier_threshold, ncc_thre;
+  double img_point_cov_, outlier_threshold_, ncc_thre_;
   
-  SubSparseMap *visual_submap;
-  std::vector<std::vector<V3D>> rays_with_sample_points;
+  SubSparseMap *visual_submap_;
+  std::vector<std::vector<V3D>> rays_with_sample_points_;
 
-  double compute_jacobian_time, update_ekf_time;
-  double ave_total = 0;
+  double compute_jacobian_time_, update_ekf_time_;
+  double ave_total_ = 0;
   // double ave_build_residual_time = 0;
   // double ave_ekf_time = 0;
 
-  int frame_count = 0;
-  bool plot_flag;
+  int frame_count_ = 0;
+  bool plot_flag_;
 
-  Matrix<double, DIM_STATE, DIM_STATE> G, H_T_H;
-  MatrixXd K, H_sub_inv;
+  Matrix<double, DIM_STATE, DIM_STATE> G_, H_T_H_;
+  MatrixXd K_, H_sub_inv_;
 
-  ofstream fout_camera, fout_colmap;
-  unordered_map<VOXEL_LOCATION, VOXEL_POINTS *> feat_map;
-  unordered_map<VOXEL_LOCATION, int> sub_feat_map; 
-  unordered_map<int, Warp *> warp_map;
-  vector<VisualPoint *> retrieve_voxel_points;
-  vector<pointWithVar> append_voxel_points;
+  ofstream fout_camera_, fout_colmap_;
+  unordered_map<VOXEL_LOCATION, VOXEL_POINTS *> feat_map_;
+  unordered_map<VOXEL_LOCATION, int> sub_feat_map_; 
+  unordered_map<int, Warp *> warp_map_;
+  vector<VisualPoint *> retrieve_voxel_points_;
+  vector<pointWithVar> append_voxel_points_;
   FramePtr new_frame_;
-  cv::Mat img_cp, img_rgb, img_test;
+  cv::Mat img_cp_, img_rgb_, img_test_;
 
   enum CellType
   {
@@ -140,36 +140,36 @@ public:
 
   VIOManager();
   ~VIOManager();
-  void updateStateInverse(cv::Mat img, int level);
-  void updateState(cv::Mat img, int level);
-  void processFrame(cv::Mat &img, vector<pointWithVar> &pg, const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &feat_map, double img_time);
-  void retrieveFromVisualSparseMap(cv::Mat img, vector<pointWithVar> &pg, const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
-  void generateVisualMapPoints(cv::Mat img, vector<pointWithVar> &pg);
-  void setImuToLidarExtrinsic(const V3D &transl, const M3D &rot);
-  void setLidarToCameraExtrinsic(vector<double> &R, vector<double> &P);
-  void initializeVIO();
-  void getImagePatch(cv::Mat img, V2D pc, float *patch_tmp, int level);
-  void computeProjectionJacobian(V3D p, MD(2, 3) & J);
-  void computeJacobianAndUpdateEKF(cv::Mat img);
-  void resetGrid();
-  void updateVisualMapPoints(cv::Mat img);
-  void getWarpMatrixAffine(const vk::AbstractCamera &cam, const Vector2d &px_ref, const Vector3d &f_ref, const double depth_ref, const SE3 &T_cur_ref,
+  void UpdateStateInverse(cv::Mat img, int level);
+  void UpdateState(cv::Mat img, int level);
+  void ProcessFrame(cv::Mat &img, vector<pointWithVar> &pg, const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &feat_map, double img_time);
+  void RetrieveFromVisualSparseMap(cv::Mat img, vector<pointWithVar> &pg, const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
+  void GenerateVisualMapPoints(cv::Mat img, vector<pointWithVar> &pg);
+  void SetImuToLidarExtrinsic(const V3D &transl, const M3D &rot);
+  void SetLidarToCameraExtrinsic(vector<double> &R, vector<double> &P);
+  void InitializeVIO();
+  void GetImagePatch(cv::Mat img, V2D pc, float *patch_tmp, int level);
+  void ComputeProjectionJacobian(V3D p, MD(2, 3) & J);
+  void ComputeJacobianAndUpdateEKF(cv::Mat img);
+  void ResetGrid();
+  void UpdateVisualMapPoints(cv::Mat img);
+  void GetWarpMatrixAffine(const vk::AbstractCamera &cam, const Vector2d &px_ref, const Vector3d &f_ref, const double depth_ref, const SE3 &T_cur_ref,
                            const int level_ref, 
                            const int pyramid_level, const int halfpatch_size, Matrix2d &A_cur_ref);
-  void getWarpMatrixAffineHomography(const vk::AbstractCamera &cam, const V2D &px_ref,
+  void GetWarpMatrixAffineHomography(const vk::AbstractCamera &cam, const V2D &px_ref,
                                      const V3D &xyz_ref, const V3D &normal_ref, const SE3 &T_cur_ref, const int level_ref, Matrix2d &A_cur_ref);
-  void warpAffine(const Matrix2d &A_cur_ref, const cv::Mat &img_ref, const Vector2d &px_ref, const int level_ref, const int search_level,
+  void WarpAffine(const Matrix2d &A_cur_ref, const cv::Mat &img_ref, const Vector2d &px_ref, const int level_ref, const int search_level,
                   const int pyramid_level, const int halfpatch_size, float *patch);
-  void insertPointIntoVoxelMap(VisualPoint *pt_new);
-  void plotTrackedPoints();
-  void updateFrameState(StatesGroup state);
-  void projectPatchFromRefToCur(const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
-  void updateReferencePatch(const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
-  void precomputeReferencePatches(int level);
-  void dumpDataForColmap();
-  double calculateNCC(float *ref_patch, float *cur_patch, int patch_size);
-  int getBestSearchLevel(const Matrix2d &A_cur_ref, const int max_level);
-  V3F getInterpolatedPixel(cv::Mat img, V2D pc);
+  void InsertPointIntoFeatureMap(VisualPoint *pt_new);
+  void PlotTrackedPoints();
+  void UpdateFrameState(StatesGroup state);
+  void ProjectPatchFromRefToCur(const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
+  void UpdateReferencePatch(const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
+  void PrecomputeReferencePatches(int level);
+  void DumpDataForColmap();
+  double CalculateNCC(float *ref_patch, float *cur_patch, int patch_size);
+  int GetBestSearchLevel(const Matrix2d &A_cur_ref, const int max_level);
+  V3F GetInterpolatedPixel(cv::Mat img, V2D pc);
   
   // void resetRvizDisplay();
   // deque<VisualPoint *> map_cur_frame;
@@ -179,7 +179,7 @@ public:
   // deque<VisualPoint *> visual_converged_point;
   // std::vector<std::vector<V3D>> sample_points;
 
-  // PointCloudXYZI::Ptr pg_down;
+  // PointCloudXYZIN::Ptr pg_down;
   // pcl::VoxelGrid<PointType> downSizeFilter;
 };
 typedef std::shared_ptr<VIOManager> VIOManagerPtr;

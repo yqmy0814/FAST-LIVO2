@@ -193,22 +193,20 @@ public:
   ros::Publisher voxel_map_pub_;
   std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> voxel_map_;
 
-  PointCloudXYZI::Ptr feats_undistort_;
-  PointCloudXYZI::Ptr feats_down_body_;
-  PointCloudXYZI::Ptr feats_down_world_;
+  PointCloudXYZIN::Ptr feats_undistort_;
+  PointCloudXYZIN::Ptr feats_down_body_;
+  PointCloudXYZIN::Ptr feats_down_world_;
 
   M3D extR_;
   V3D extT_;
-  float build_residual_time, ekf_time;
-  float ave_build_residual_time = 0.0;
-  float ave_ekf_time = 0.0;
-  int scan_count = 0;
+  float build_residual_time_, ekf_time_;
+  float ave_build_residual_time_ = 0.0;
+  float ave_ekf_time_ = 0.0;
+  int scan_count_ = 0;
   StatesGroup state_;
   V3D position_last_;
 
-  V3D last_slide_position = {0,0,0};
-
-  geometry_msgs::Quaternion geoQuat_;
+  V3D last_slide_position_ = {0,0,0};
 
   int feats_down_size_;
   int effct_feat_num_;
@@ -221,13 +219,13 @@ public:
       : config_setting_(config_setting), voxel_map_(voxel_map)
   {
     current_frame_id_ = 0;
-    feats_undistort_.reset(new PointCloudXYZI());
-    feats_down_body_.reset(new PointCloudXYZI());
-    feats_down_world_.reset(new PointCloudXYZI());
+    feats_undistort_.reset(new PointCloudXYZIN());
+    feats_down_body_.reset(new PointCloudXYZIN());
+    feats_down_world_.reset(new PointCloudXYZIN());
   };
 
   void StateEstimation(StatesGroup &state_propagat);
-  void TransformLidar(const Eigen::Matrix3d rot, const Eigen::Vector3d t, const PointCloudXYZI::Ptr &input_cloud,
+  void TransformLidar(const Eigen::Matrix3d rot, const Eigen::Vector3d t, const PointCloudXYZIN::Ptr &input_cloud,
                       pcl::PointCloud<pcl::PointXYZI>::Ptr &trans_cloud);
 
   void BuildVoxelMap();

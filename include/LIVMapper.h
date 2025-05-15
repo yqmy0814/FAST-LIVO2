@@ -41,10 +41,10 @@ public:
   bool sync_packages(LidarMeasureGroup &meas);
   void prop_imu_once(StatesGroup &imu_prop_state, const double dt, V3D acc_avr, V3D angvel_avr);
   void imu_prop_callback(const ros::TimerEvent &e);
-  void transformLidar(const Eigen::Matrix3d rot, const Eigen::Vector3d t, const PointCloudXYZI::Ptr &input_cloud, PointCloudXYZI::Ptr &trans_cloud);
-  void pointBodyToWorld(const PointType &pi, PointType &po);
+  void transformLidar(const Eigen::Matrix3d rot, const Eigen::Vector3d t, const PointCloudXYZIN::Ptr &input_cloud, PointCloudXYZIN::Ptr &trans_cloud);
+  void pointBodyToWorld(const PointXYZIN &pi, PointXYZIN &po);
  
-  void RGBpointBodyToWorld(PointType const *const pi, PointType *const po);
+  void RGBpointBodyToWorld(PointXYZIN const *const pi, PointXYZIN *const po);
   void standard_pcl_cbk(const sensor_msgs::PointCloud2::ConstPtr &msg);
   void livox_pcl_cbk(const livox_ros_driver::CustomMsg::ConstPtr &msg_in);
   void imu_cbk(const sensor_msgs::Imu::ConstPtr &msg_in);
@@ -62,126 +62,126 @@ public:
   template <typename T> Eigen::Matrix<T, 3, 1> pointBodyToWorld(const Eigen::Matrix<T, 3, 1> &pi);
   cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg);
 
-  std::mutex mtx_buffer, mtx_buffer_imu_prop;
-  std::condition_variable sig_buffer;
+  std::mutex mtx_buffer_, mtx_buffer_imu_prop_;
+  std::condition_variable sig_buffer_;
 
   SLAM_MODE slam_mode_;
-  std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> voxel_map;
+  std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> voxel_map_;
   
-  string root_dir;
-  string lid_topic, imu_topic, seq_name, img_topic;
-  V3D extT;
-  M3D extR;
+  string root_dir_;
+  string lid_topic_, imu_topic_, seq_name_, img_topic_;
+  V3D ext_t_;
+  M3D ext_r_;
 
-  int feats_down_size = 0, max_iterations = 0;
+  int feats_down_size_ = 0, max_iterations_ = 0;
 
-  double res_mean_last = 0.05;
-  double gyr_cov = 0, acc_cov = 0, inv_expo_cov = 0;
-  double blind_rgb_points = 0.0;
-  double last_timestamp_lidar = -1.0, last_timestamp_imu = -1.0, last_timestamp_img = -1.0;
-  double filter_size_surf_min = 0;
-  double filter_size_pcd = 0;
-  double _first_lidar_time = 0.0;
-  double match_time = 0, solve_time = 0, solve_const_H_time = 0;
+  double res_mean_last_ = 0.05;
+  double gyr_cov_ = 0, acc_cov_ = 0, inv_expo_cov_ = 0;
+  double blind_rgb_points_ = 0.0;
+  double last_timestamp_lidar_ = -1.0, last_timestamp_imu_ = -1.0, last_timestamp_img_ = -1.0;
+  double filter_size_surf_min_ = 0;
+  double filter_size_pcd_ = 0;
+  double first_lidar_time_ = 0.0;
+  double match_time_ = 0, solve_time_ = 0, solve_const_H_time_ = 0;
 
-  bool lidar_map_inited = false, pcd_save_en = false, pub_effect_point_en = false, pose_output_en = false, ros_driver_fix_en = false;
-  int pcd_save_interval = -1, pcd_index = 0;
-  int pub_scan_num = 1;
+  bool lidar_map_inited_ = false, pcd_save_en_ = false, pub_effect_point_en_ = false, pose_output_en_ = false, ros_driver_fix_en_ = false;
+  int pcd_save_interval_ = -1, pcd_index_ = 0;
+  int pub_scan_num_ = 1;
 
-  StatesGroup imu_propagate, latest_ekf_state;
+  StatesGroup imu_propagate_, latest_ekf_state_;
 
-  bool new_imu = false, state_update_flg = false, imu_prop_enable = true, ekf_finish_once = false;
-  deque<sensor_msgs::Imu> prop_imu_buffer;
-  sensor_msgs::Imu newest_imu;
-  double latest_ekf_time;
-  nav_msgs::Odometry imu_prop_odom;
-  ros::Publisher pubImuPropOdom;
-  double imu_time_offset = 0.0;
-  double lidar_time_offset = 0.0;
+  bool new_imu_ = false, state_update_flg_ = false, imu_prop_enable_ = true, ekf_finish_once_ = false;
+  deque<sensor_msgs::Imu> prop_imu_buffer_;
+  sensor_msgs::Imu newest_imu_;
+  double latest_ekf_time_;
+  nav_msgs::Odometry imu_prop_odom_;
+  ros::Publisher pub_imu_prop_odom_;
+  double imu_time_offset_ = 0.0;
+  double lidar_time_offset_ = 0.0;
 
-  bool gravity_align_en = false, gravity_align_finished = false;
+  bool gravity_align_en_ = false, gravity_align_finished_ = false;
 
-  bool sync_jump_flag = false;
+  bool sync_jump_flag_ = false;
 
-  bool lidar_pushed = false, imu_en, gravity_est_en, flg_reset = false, ba_bg_est_en = true;
+  bool lidar_pushed_ = false, imu_en_, gravity_est_en_, flg_reset_ = false, ba_bg_est_en_ = true;
   bool dense_map_en = false;
-  int img_en = 1, imu_int_frame = 3;
-  bool normal_en = true;
-  bool exposure_estimate_en = false;
-  double exposure_time_init = 0.0;
-  bool inverse_composition_en = false;
-  bool raycast_en = false;
-  int lidar_en = 1;
-  bool is_first_frame = false;
-  int grid_size, patch_size, grid_n_width, grid_n_height, patch_pyrimid_level;
-  double outlier_threshold;
-  double plot_time;
-  int frame_cnt;
-  double img_time_offset = 0.0;
-  deque<PointCloudXYZI::Ptr> lid_raw_data_buffer;
-  deque<double> lid_header_time_buffer;
-  deque<sensor_msgs::Imu::ConstPtr> imu_buffer;
-  deque<cv::Mat> img_buffer;
-  deque<double> img_time_buffer;
-  vector<pointWithVar> _pv_list;
-  vector<double> extrinT;
-  vector<double> extrinR;
-  vector<double> cameraextrinT;
-  vector<double> cameraextrinR;
-  double IMG_POINT_COV;
+  int img_en_ = 1, imu_int_frame_ = 3;
+  bool normal_en_ = true;
+  bool exposure_estimate_en_ = false;
+  double exposure_time_init_ = 0.0;
+  bool inverse_composition_en_ = false;
+  bool raycast_en_ = false;
+  int lidar_en_ = 1;
+  bool first_frame_finished_ = false;
+  int grid_size_, patch_size_, grid_n_width_, grid_n_height_, patch_pyrimid_level_;
+  double outlier_threshold_;
+  double plot_time_;
+  int frame_cnt_;
+  double img_time_offset_ = 0.0;
+  deque<PointCloudXYZIN::Ptr> lid_raw_data_buffer_;
+  deque<double> lid_header_time_buffer_;
+  deque<sensor_msgs::Imu::ConstPtr> imu_buffer_;
+  deque<cv::Mat> img_buffer_;
+  deque<double> img_time_buffer_;
+  vector<pointWithVar> pv_list_;
+  vector<double> extrin_t_;
+  vector<double> extrin_r_;
+  vector<double> cameraextrin_t_;
+  vector<double> cameraextrin_r_;
+  double img_point_cov_;
 
-  PointCloudXYZI::Ptr visual_sub_map;
-  PointCloudXYZI::Ptr feats_undistort;
-  PointCloudXYZI::Ptr feats_down_body;
-  PointCloudXYZI::Ptr feats_down_world;
-  PointCloudXYZI::Ptr pcl_w_wait_pub;
-  PointCloudXYZI::Ptr pcl_wait_pub;
-  PointCloudXYZRGB::Ptr pcl_wait_save;
-  PointCloudXYZI::Ptr pcl_wait_save_intensity;
+  PointCloudXYZIN::Ptr visual_sub_map_;
+  PointCloudXYZIN::Ptr feats_undistort_;
+  PointCloudXYZIN::Ptr feats_down_body_;
+  PointCloudXYZIN::Ptr feats_down_world_;
+  PointCloudXYZIN::Ptr pcl_w_wait_pub_;
+  PointCloudXYZIN::Ptr pcl_wait_pub_;
+  PointCloudXYZRGB::Ptr pcl_wait_save_;
+  PointCloudXYZIN::Ptr pcl_wait_save_intensity_;
 
-  ofstream fout_pre, fout_out, fout_pcd_pos, fout_points;
+  ofstream fout_pre_, fout_out_, fout_pcd_pos_, fout_points_;
 
-  pcl::VoxelGrid<PointType> downSizeFilterSurf;
+  pcl::VoxelGrid<PointXYZIN> downSize_filter_surf_;
 
-  V3D euler_cur;
+  V3D euler_cur_;
 
-  LidarMeasureGroup LidarMeasures;
-  StatesGroup _state;
-  StatesGroup  state_propagat;
+  LidarMeasureGroup Lidar_measures_;
+  StatesGroup state_;
+  StatesGroup  state_propagat_;
 
-  nav_msgs::Path path;
-  nav_msgs::Odometry odomAftMapped;
-  geometry_msgs::Quaternion geoQuat;
-  geometry_msgs::PoseStamped msg_body_pose;
+  nav_msgs::Path path_;
+  nav_msgs::Odometry odom_aft_mapped_;
+  geometry_msgs::Quaternion geo_quat_;
+  geometry_msgs::PoseStamped msg_body_pose_;
 
-  PreprocessPtr p_pre;
-  ImuProcessPtr p_imu;
-  VoxelMapManagerPtr voxelmap_manager;
-  VIOManagerPtr vio_manager;
+  PreprocessPtr p_pre_;
+  ImuProcessPtr p_imu_;
+  VoxelMapManagerPtr voxelmap_manager_;
+  VIOManagerPtr vio_manager_;
 
-  ros::Publisher plane_pub;
-  ros::Publisher voxel_pub;
-  ros::Subscriber sub_pcl;
-  ros::Subscriber sub_imu;
-  ros::Subscriber sub_img;
-  ros::Publisher pubLaserCloudFullRes;
-  ros::Publisher pubNormal;
-  ros::Publisher pubSubVisualMap;
-  ros::Publisher pubLaserCloudEffect;
-  ros::Publisher pubLaserCloudMap;
-  ros::Publisher pubOdomAftMapped;
-  ros::Publisher pubPath;
-  ros::Publisher pubLaserCloudDyn;
-  ros::Publisher pubLaserCloudDynRmed;
-  ros::Publisher pubLaserCloudDynDbg;
-  image_transport::Publisher pubImage;
-  ros::Publisher mavros_pose_publisher;
-  ros::Timer imu_prop_timer;
+  ros::Publisher plane_pub_;
+  ros::Publisher voxel_pub_;
+  ros::Subscriber sub_pcl_;
+  ros::Subscriber sub_imu_;
+  ros::Subscriber sub_img_;
+  ros::Publisher pubLaser_cloud_full_res_;
+  ros::Publisher pub_normal_;
+  ros::Publisher pub_sub_visual_map_;
+  ros::Publisher pub_laser_cloud_effect_;
+  ros::Publisher pub_laser_cloud_map_;
+  ros::Publisher pub_odom_aft_mapped_;
+  ros::Publisher pub_path_;
+  ros::Publisher pub_laser_cloud_dyn_;
+  ros::Publisher pub_laser_cloud_dyn_rmed_;
+  ros::Publisher pub_laser_cloud_dyn_dbg_;
+  image_transport::Publisher pub_image_;
+  ros::Publisher mavros_pose_publisher_;
+  ros::Timer imu_prop_timer_;
 
-  int frame_num = 0;
-  double aver_time_consu = 0;
-  double aver_time_icp = 0;
-  double aver_time_map_inre = 0;
-  bool colmap_output_en = false;
+  int frame_num_ = 0;
+  double aver_time_consu_ = 0;
+  double aver_time_icp_ = 0;
+  double aver_time_map_inre_ = 0;
+  bool colmap_output_en_ = false;
 };
 #endif

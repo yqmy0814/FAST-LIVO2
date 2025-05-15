@@ -28,45 +28,45 @@ class Frame : boost::noncopyable
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  static int frame_counter_; //!< Counts the number of created frames. Used to set the unique id.
-  int id_;                   //!< Unique id of the frame.
-  vk::AbstractCamera *cam_;  //!< Camera model.
-  SE3 T_f_w_;                //!< Transform (f)rame from (w)orld.
-  SE3 T_f_w_prior_;          //!< Transform (f)rame from (w)orld provided by the IMU prior.
-  cv::Mat img_;              //!< Image of the frame.
-  Features fts_;             //!< List of features in the image.
+  static int frame_counter_; // 帧计数器，用于生成帧的唯一ID
+  int id_;                   // 帧的唯一ID
+  vk::AbstractCamera *cam_;  // 相机模型
+  SE3 T_f_w_;                // 相机在世界系下的位姿
+  SE3 T_f_w_prior_;          // IMU先验位姿（没有用到）
+  cv::Mat img_;              // 帧的图像
+  Features fts_;             // 保存特征的链表
 
   Frame(vk::AbstractCamera *cam, const cv::Mat &img);
   ~Frame();
 
-  /// Initialize new frame and create image pyramid.
+  /// 初始化新帧并创建图像金字塔。
   void initFrame(const cv::Mat &img);
 
-  /// Return number of point observations.
+  /// 返回点观测的数量。
   inline size_t nObs() const { return fts_.size(); }
 
-  /// Transforms point coordinates in world-frame (w) to camera pixel coordinates (c).
+  /// 将世界坐标系 (w) 中的点坐标转换为相机像素坐标系 (c) 中的坐标。
   inline Vector2d w2c(const Vector3d &xyz_w) const { return cam_->world2cam(T_f_w_ * xyz_w); }
 
-  /// Transforms point coordinates in world-frame (w) to camera pixel coordinates (c) using the IMU prior pose.
+  /// 使用 IMU 先验姿态将世界坐标系 (w) 中的点坐标转换为相机像素坐标系 (c) 中的坐标。
   inline Vector2d w2c_prior(const Vector3d &xyz_w) const { return cam_->world2cam(T_f_w_prior_ * xyz_w); }
   
-  /// Transforms pixel coordinates (c) to frame unit sphere coordinates (f).
+  /// 将相机像素坐标系 (c) 中的坐标转换为帧单位球坐标系 (f) 中的坐标。
   inline Vector3d c2f(const Vector2d &px) const { return cam_->cam2world(px[0], px[1]); }
 
-  /// Transforms pixel coordinates (c) to frame unit sphere coordinates (f).
+  /// 将相机像素坐标系 (c) 中的坐标转换为帧单位球坐标系 (f) 中的坐标。
   inline Vector3d c2f(const double x, const double y) const { return cam_->cam2world(x, y); }
 
-  /// Transforms point coordinates in world-frame (w) to camera-frams (f).
+  /// 将世界坐标系 (w) 中的点坐标转换为相机坐标系 (f) 中的坐标。
   inline Vector3d w2f(const Vector3d &xyz_w) const { return T_f_w_ * xyz_w; }
 
-  /// Transforms point from frame unit sphere (f) frame to world coordinate frame (w).
+  /// 将帧单位球坐标系 (f) 中的点坐标转换为世界坐标系 (w) 中的坐标。
   inline Vector3d f2w(const Vector3d &f) const { return T_f_w_.inverse() * f; }
 
-  /// Projects Point from unit sphere (f) in camera pixels (c).
+  /// 将单位球坐标系 (f) 中的点投影到相机像素坐标系 (c) 中。
   inline Vector2d f2c(const Vector3d &f) const { return cam_->world2cam(f); }
 
-  /// Return the pose of the frame in the (w)orld coordinate frame.
+  /// 返回帧在 (w) 世界坐标系中的姿态。
   inline Vector3d pos() const { return T_f_w_.inverse().translation(); }
 };
 
@@ -76,7 +76,7 @@ typedef std::unique_ptr<Frame> FramePtr;
 namespace frame_utils
 {
 
-/// Creates an image pyramid of half-sampled images.
+/// 创建一个由半采样图像组成的图像金字塔。
 void createImgPyramid(const cv::Mat &img_level_0, int n_levels, ImgPyr &pyr);
 
 } // namespace frame_utils

@@ -110,7 +110,7 @@ find_package(Boost REQUIRED COMPONENTS thread)
 catkin_package(
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs message_runtime cv_bridge vikit_common vikit_ros image_transport
   DEPENDS EIGEN3 PCL OpenCV 
-)#Sophus
+)
 
 # Include directories for dependencies
 include_directories(
@@ -118,7 +118,6 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  # ${Sophus_INCLUDE_DIRS}
   include
 )
 

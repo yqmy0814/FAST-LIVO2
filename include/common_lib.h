@@ -36,6 +36,8 @@ using namespace Eigen;
 #define DEBUG_FILE_DIR(name) (string(string(ROOT_DIR) + "Log/" + name))
 
 using SE3 = Sophus::SE3d;
+using Mat19d = Eigen::Matrix<double, 19, 19>; // R:0~2, p:3~5, τ:6, v:7~9, bg:10~12, ba:13~15, g:16~18
+using Vec19d = Eigen::Matrix<double, 19, 1>;
 
 enum LID_TYPE
 {
@@ -78,9 +80,9 @@ struct LidarMeasureGroup
   double lidar_frame_beg_time;
   double lidar_frame_end_time;
   double last_lio_update_time;
-  PointCloudXYZI::Ptr lidar;
-  PointCloudXYZI::Ptr pcl_proc_cur;
-  PointCloudXYZI::Ptr pcl_proc_next;
+  PointCloudXYZIN::Ptr lidar;
+  PointCloudXYZIN::Ptr pcl_proc_cur;
+  PointCloudXYZIN::Ptr pcl_proc_next;
   deque<struct MeasureGroup> measures;
   EKF_STATE lio_vio_flg;
   int lidar_scan_index_now;
@@ -91,12 +93,11 @@ struct LidarMeasureGroup
     lidar_frame_end_time = 0.0;
     last_lio_update_time = -1.0;
     lio_vio_flg = WAIT;
-    this->lidar.reset(new PointCloudXYZI());
-    this->pcl_proc_cur.reset(new PointCloudXYZI());
-    this->pcl_proc_next.reset(new PointCloudXYZI());
+    this->lidar.reset(new PointCloudXYZIN());
+    this->pcl_proc_cur.reset(new PointCloudXYZIN());
+    this->pcl_proc_next.reset(new PointCloudXYZIN());
     this->measures.clear();
     lidar_scan_index_now = 0;
-    last_lio_update_time = -1.0;
   };
 };
 
@@ -135,7 +136,7 @@ struct StatesGroup
     this->bias_a = V3D::Zero();
     this->gravity = V3D::Zero();
     this->inv_expo_time = 1.0;
-    this->cov = MD(DIM_STATE, DIM_STATE)::Identity() * INIT_COV;
+    this->cov = Mat19d::Identity() * INIT_COV;
     this->cov(6, 6) = 0.00001;
     this->cov.block<9, 9>(10, 10) = MD(9, 9)::Identity() * 0.00001;
   };
@@ -213,14 +214,14 @@ struct StatesGroup
     this->vel_end = V3D::Zero();
   }
 
-  M3D rot_end;                              // the estimated attitude (rotation matrix) at the end lidar point
-  V3D pos_end;                              // the estimated position at the end lidar point (world frame)
-  V3D vel_end;                              // the estimated velocity at the end lidar point (world frame)
-  double inv_expo_time;                     // the estimated inverse exposure time (no scale)
-  V3D bias_g;                               // gyroscope bias
-  V3D bias_a;                               // accelerator bias
-  V3D gravity;                              // the estimated gravity acceleration
-  Matrix<double, DIM_STATE, DIM_STATE> cov; // states covariance
+  M3D rot_end;                              // 当前帧最后时刻的估计姿态（旋转矩阵）
+  V3D pos_end;                              // 当前帧最后时刻的估计位置（世界坐标系）
+  V3D vel_end;                              // 当前帧最后时刻的估计速度（世界坐标系）
+  double inv_expo_time;                     // 当前帧最后时刻的估计逆曝光时间（无缩放）
+  V3D bias_g;                               // 陀螺仪偏置
+  V3D bias_a;                               // 加速度计偏置
+  V3D gravity;                              // 估计的重力加速度
+  Matrix<double, DIM_STATE, DIM_STATE> cov; // 状态协方差矩阵
 };
 
 template <typename T>
