@@ -28,18 +28,7 @@ INCLUDE_DIRECTORIES(
 )
 
 # Set Sourcefiles
-LIST(APPEND SOURCEFILES src/atan_camera.cpp
-                        src/omni_camera.cpp
-                        src/math_utils.cpp
-                        src/vision.cpp
-                        src/performance_monitor.cpp
-                        src/robust_cost.cpp
-                        src/user_input_thread.cpp
-                        src/pinhole_camera.cpp
-                        src/equidistant_camera.cpp
-                        src/polynomial_camera.cpp
-                        src/homography.cpp
-                        src/img_align.cpp)
+file(GLOB SOURCEFILES src/*.cpp)
 
 # Create vikit library
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCEFILES})
