@@ -77,10 +77,6 @@ class LIVMapper {
   std::condition_variable sig_buffer_;
 
   SLAM_MODE slam_mode_;
-//   std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> voxel_map_;
-  std::list<VMData> vm_data_;
-  std::unordered_map<VOXEL_LOCATION, typename std::list<VMData>::iterator>
-      vm_map_;
 
   string root_dir_;
   string lid_topic_, imu_topic_, seq_name_, img_topic_;

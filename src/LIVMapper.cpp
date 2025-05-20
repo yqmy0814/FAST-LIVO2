@@ -37,8 +37,7 @@ LIVMapper::LIVMapper(ros::NodeHandle &nh)
   pcl_wait_pub_.reset(new PointCloudXYZIN());
   pcl_wait_save_.reset(new PointCloudXYZRGB());
   pcl_wait_save_intensity_.reset(new PointCloudXYZIN());
-  // voxelmap_manager_.reset(new VoxelMapManager(voxel_config, voxel_map_));
-  voxelmap_manager_.reset(new VoxelMapManager(voxel_config, vm_data_, vm_map_));
+  voxelmap_manager_.reset(new VoxelMapManager(voxel_config));
   vio_manager_.reset(new VIOManager());
   root_dir_ = ROOT_DIR;
   InitializeFiles();
@@ -314,14 +313,14 @@ void LIVMapper::HandleVIO() {
     vio_manager_->plot_flag_ = false;
   }
 
-  // vio_manager_->ProcessFrame(
-  //     Lidar_measures_.measures.back().img, pv_list_,
-  //     voxelmap_manager_->voxel_map_,
-  //     Lidar_measures_.last_lio_update_time - first_lidar_time_);
-
   vio_manager_->ProcessFrame(
-      Lidar_measures_.measures.back().img, pv_list_, voxelmap_manager_->vm_map_,
+      Lidar_measures_.measures.back().img, pv_list_,
+      voxelmap_manager_->voxel_map_,
       Lidar_measures_.last_lio_update_time - first_lidar_time_);
+
+  // vio_manager_->ProcessFrame(
+  //     Lidar_measures_.measures.back().img, pv_list_, voxelmap_manager_->vm_map_,
+  //     Lidar_measures_.last_lio_update_time - first_lidar_time_);
 
   if (imu_prop_enable_) {
     ekf_finish_once_ = true;
