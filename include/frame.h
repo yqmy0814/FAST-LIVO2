@@ -15,12 +15,13 @@ which is included as part of this source code package.
 
 #include <boost/noncopyable.hpp>
 #include <vikit/abstract_camera.h>
+#include "common_lib.h"
 
 class VisualPoint;
 struct Feature;
 
-typedef list<Feature *> Features;
-typedef vector<cv::Mat> ImgPyr;
+typedef std::list<Feature *> Features;
+typedef std::vector<cv::Mat> ImgPyr;
 
 /// A frame saves the image, the associated features and the estimated pose.
 class Frame : boost::noncopyable
@@ -46,28 +47,28 @@ public:
   inline size_t nObs() const { return fts_.size(); }
 
   /// 将世界坐标系 (w) 中的点坐标转换为相机像素坐标系 (c) 中的坐标。
-  inline Vector2d w2c(const Vector3d &xyz_w) const { return cam_->world2cam(T_f_w_ * xyz_w); }
+  inline Eigen::Vector2d w2c(const Eigen::Vector3d &xyz_w) const { return cam_->world2cam(T_f_w_ * xyz_w); }
 
   /// 使用 IMU 先验姿态将世界坐标系 (w) 中的点坐标转换为相机像素坐标系 (c) 中的坐标。
-  inline Vector2d w2c_prior(const Vector3d &xyz_w) const { return cam_->world2cam(T_f_w_prior_ * xyz_w); }
+  inline Eigen::Vector2d w2c_prior(const Eigen::Vector3d &xyz_w) const { return cam_->world2cam(T_f_w_prior_ * xyz_w); }
   
   /// 将相机像素坐标系 (c) 中的坐标转换为帧单位球坐标系 (f) 中的坐标。
-  inline Vector3d c2f(const Vector2d &px) const { return cam_->cam2world(px[0], px[1]); }
+  inline Eigen::Vector3d c2f(const Eigen::Vector2d &px) const { return cam_->cam2world(px[0], px[1]); }
 
   /// 将相机像素坐标系 (c) 中的坐标转换为帧单位球坐标系 (f) 中的坐标。
-  inline Vector3d c2f(const double x, const double y) const { return cam_->cam2world(x, y); }
+  inline Eigen::Vector3d c2f(const double x, const double y) const { return cam_->cam2world(x, y); }
 
   /// 将世界坐标系 (w) 中的点坐标转换为相机坐标系 (f) 中的坐标。
-  inline Vector3d w2f(const Vector3d &xyz_w) const { return T_f_w_ * xyz_w; }
+  inline Eigen::Vector3d w2f(const Eigen::Vector3d &xyz_w) const { return T_f_w_ * xyz_w; }
 
   /// 将帧单位球坐标系 (f) 中的点坐标转换为世界坐标系 (w) 中的坐标。
-  inline Vector3d f2w(const Vector3d &f) const { return T_f_w_.inverse() * f; }
+  inline Eigen::Vector3d f2w(const Eigen::Vector3d &f) const { return T_f_w_.inverse() * f; }
 
   /// 将单位球坐标系 (f) 中的点投影到相机像素坐标系 (c) 中。
-  inline Vector2d f2c(const Vector3d &f) const { return cam_->world2cam(f); }
+  inline Eigen::Vector2d f2c(const Eigen::Vector3d &f) const { return cam_->world2cam(f); }
 
   /// 返回帧在 (w) 世界坐标系中的姿态。
-  inline Vector3d pos() const { return T_f_w_.inverse().translation(); }
+  inline Eigen::Vector3d pos() const { return T_f_w_.inverse().translation(); }
 };
 
 typedef std::unique_ptr<Frame> FramePtr;

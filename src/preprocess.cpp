@@ -11,6 +11,7 @@ which is included as part of this source code package.
 */
 
 #include "preprocess.h"
+#include "omp.h"
 
 #define RETURN0 0x00
 #define RETURN0AND1 0x10
@@ -230,7 +231,7 @@ void Preprocess::l515_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
     pl_surf.points.push_back(added_pt);
   }
 
-  cout << "pl size:: " << pl_orig.points.size() << endl;
+  std::cout << "pl size:: " << pl_orig.points.size() << endl;
   // pub_func(pl_surf, pub_full, msg->header.stamp);
   // pub_func(pl_surf, pub_corn, msg->header.stamp);
 }

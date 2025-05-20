@@ -15,8 +15,8 @@ which is included as part of this source code package.
 #include <stdexcept>
 #include <vikit/math_utils.h>
 
-VisualPoint::VisualPoint(const Vector3d &pos)
-    : pos_(pos), previous_normal_(Vector3d::Zero()), normal_(Vector3d::Zero()),
+VisualPoint::VisualPoint(const Eigen::Vector3d &pos)
+    : pos_(pos), previous_normal_(Eigen::Vector3d::Zero()), normal_(Eigen::Vector3d::Zero()),
       is_converged_(false), is_normal_initialized_(false), has_ref_patch_(false)
 {
 }
@@ -54,18 +54,18 @@ void VisualPoint::deleteFeatureRef(Feature *ftr)
   }
 }
 
-bool VisualPoint::getCloseViewObs(const Vector3d &framepos, Feature *&ftr, const Vector2d &cur_px) const
+bool VisualPoint::getCloseViewObs(const Eigen::Vector3d &framepos, Feature *&ftr, const Eigen::Vector2d &cur_px) const
 {
   // TODO: get frame with same point of view AND same pyramid level!
   if (obs_.size() <= 0) return false;
 
-  Vector3d obs_dir(framepos - pos_);
+  Eigen::Vector3d obs_dir(framepos - pos_);
   obs_dir.normalize();
   auto min_it = obs_.begin();
   double min_cos_angle = 0;
   for (auto it = obs_.begin(), ite = obs_.end(); it != ite; ++it)
   {
-    Vector3d dir((*it)->T_f_w_.inverse().translation() - pos_);
+    Eigen::Vector3d dir((*it)->T_f_w_.inverse().translation() - pos_);
     dir.normalize();
     double cos_angle = obs_dir.dot(dir);
     if (cos_angle > min_cos_angle)
@@ -94,7 +94,7 @@ bool VisualPoint::getCloseViewObs(const Vector3d &framepos, Feature *&ftr, const
   return true;
 }
 
-void VisualPoint::findMinScoreFeature(const Vector3d &framepos, Feature *&ftr) const
+void VisualPoint::findMinScoreFeature(const Eigen::Vector3d &framepos, Feature *&ftr) const
 {
   auto min_it = obs_.begin();
   float min_score = std::numeric_limits<float>::max();

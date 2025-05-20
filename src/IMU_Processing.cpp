@@ -54,23 +54,23 @@ void ImuProcess::Reset() {
 }
 
 void ImuProcess::disable_imu() {
-  cout << "IMU Disabled !!!!!" << endl;
+  std::cout << "IMU Disabled !!!!!" << std::endl;
   imu_en_ = false;
   imu_need_init_ = false;
 }
 
 void ImuProcess::disable_gravity_est() {
-  cout << "Online Gravity Estimation Disabled !!!!!" << endl;
+  std::cout << "Online Gravity Estimation Disabled !!!!!" << std::endl;
   gravity_est_en_ = false;
 }
 
 void ImuProcess::disable_bias_est() {
-  cout << "Bias Estimation Disabled !!!!!" << endl;
+  std::cout << "Bias Estimation Disabled !!!!!" << std::endl;
   ba_bg_est_en_ = false;
 }
 
 void ImuProcess::disable_exposure_est() {
-  cout << "Online Time Offset Estimation Disabled !!!!!" << endl;
+  std::cout << "Online Time Offset Estimation Disabled !!!!!" << std::endl;
   exposure_estimate_en_ = false;
 }
 
@@ -290,9 +290,9 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas,
             0.5 * (head->linear_acceleration.y + tail->linear_acceleration.y),
             0.5 * (head->linear_acceleration.z + tail->linear_acceleration.z);
 
-        fout_imu_ << setw(10) << head->header.stamp.toSec() - first_lidar_time_
+        fout_imu_ << std::setw(10) << head->header.stamp.toSec() - first_lidar_time_
                   << " " << angvel_avr.transpose() << " " << acc_avr.transpose()
-                  << endl;
+                  << std::endl;
 
         angvel_avr -= state_inout.bias_g;
         acc_avr = acc_avr * G_m_s2 / mean_acc_.norm() - state_inout.bias_a;
@@ -503,7 +503,7 @@ void ImuProcess::Process2(LidarMeasureGroup &lidar_meas, StatesGroup &state,
           "%.8f %.8f %.8f",
           cov_bias_acc_[0], cov_bias_acc_[1], cov_bias_acc_[2],
           cov_bias_gyr_[0], cov_bias_gyr_[1], cov_bias_gyr_[2]);
-      fout_imu_.open(DEBUG_FILE_DIR("imu.txt"), ios::out);
+      fout_imu_.open(DEBUG_FILE_DIR("imu.txt"), std::ios::out);
     }
 
     return;

@@ -25,25 +25,25 @@ class VisualPoint : boost::noncopyable {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  Vector3d pos_;                        //点的位置
-  Vector3d normal_;                     //所在平面法向量
+  Eigen::Vector3d pos_;                        //点的位置
+  Eigen::Vector3d normal_;                     //所在平面法向量
   Eigen::Matrix3d normal_information_;  //法向量协方差矩阵的逆
-  Vector3d previous_normal_;            //上次更新的法向量
-  list<Feature *> obs_;                 //所有的观察到该点的图像块
+  Eigen::Vector3d previous_normal_;            //上次更新的法向量
+  std::list<Feature *> obs_;                 //所有的观察到该点的图像块
   Eigen::Matrix3d covariance_;          //点的协方差
   bool is_converged_;                   //是否收敛
   bool is_normal_initialized_;          //法向量是否初始化
   bool has_ref_patch_;  //是否存在参考图像块
   Feature *ref_patch;   //参考图像块
 
-  VisualPoint(const Vector3d &pos);
+  VisualPoint(const Eigen::Vector3d &pos);
   ~VisualPoint();
-  void findMinScoreFeature(const Vector3d &framepos, Feature *&ftr) const;
+  void findMinScoreFeature(const Eigen::Vector3d &framepos, Feature *&ftr) const;
   void deleteNonRefPatchFeatures();
   void deleteFeatureRef(Feature *ftr);
   void addFrameRef(Feature *ftr);
-  bool getCloseViewObs(const Vector3d &pos, Feature *&obs,
-                       const Vector2d &cur_px) const;
+  bool getCloseViewObs(const Eigen::Vector3d &pos, Feature *&obs,
+                       const Eigen::Vector2d &cur_px) const;
 };
 
 #endif  // LIVO_POINT_H_

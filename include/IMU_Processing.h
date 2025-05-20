@@ -49,7 +49,7 @@ public:
   void Process2(LidarMeasureGroup &lidar_meas, StatesGroup &stat, PointCloudXYZIN::Ptr cur_pcl_un_);
   void UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_inout, PointCloudXYZIN &pcl_out);
 
-  ofstream fout_imu_;
+  std::ofstream fout_imu_;
   double imu_mean_acc_norm_;
   V3D unbiased_gyr_;
 
@@ -71,7 +71,7 @@ private:
   PointCloudXYZIN pcl_wait_proc_;
   sensor_msgs::ImuConstPtr last_imu_;
   PointCloudXYZIN::Ptr cur_pcl_un_;
-  vector<Pose6D> imu_pose_;
+  std::vector<Pose6D> imu_pose_;
   M3D lidar_rot_to_imu_;
   V3D lidar_offset_to_imu_;
   V3D mean_acc_;

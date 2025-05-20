@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
   LIVMapper mapper(nh);
-  mapper.initializeSubscribersAndPublishers(nh, it);
-  mapper.run();
+  mapper.InitializeSubscribersAndPublishers(nh, it);
+  mapper.Run();
   return 0;
 }
