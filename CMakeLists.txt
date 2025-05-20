@@ -145,7 +145,7 @@ target_link_libraries(fastlivo_mapping
   glog::glog
   ${GFLAGS_LIBRARIES}
   ${Boost_LIBRARIES}
-  vikit_common
+  vikit_plugin
 )
 
 # Link mimalloc if found
