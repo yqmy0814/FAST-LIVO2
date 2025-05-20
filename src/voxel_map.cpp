@@ -925,10 +925,6 @@ void VoxelMapManager::BuildResidualListLRU(
     index[i] = i;
     useful_ptpl[i] = false;
   }
-#ifdef MP_EN
-  omp_set_num_threads(MP_PROC_NUM);
-#pragma omp parallel for
-#endif
   for (int i = 0; i < index.size(); i++) {
     pointWithVar &pv = pv_list[i];
     float loc_xyz[3];
