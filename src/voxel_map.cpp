@@ -673,12 +673,6 @@ void VoxelMapManager::BuildVoxelMapLRU() {
       // 更新的放至最前
       vm_data_.splice(vm_data_.begin(), vm_data_, iter->second);
       iter->second = vm_data_.begin();
-
-      // {
-      //   // old
-      //   voxel_map_[position]->temp_points_.push_back(p_v);
-      //   voxel_map_[position]->new_points_++;
-      // }
     } else {
       // 体素不存在
       VoxelOctoTree *octo_tree = new VoxelOctoTree(
@@ -808,11 +802,6 @@ void VoxelMapManager::UpdateVoxelMapLRU(
       // 更新的放至最前
       vm_data_.splice(vm_data_.begin(), vm_data_, iter->second);
       iter->second = vm_data_.begin();
-
-      // {
-      //   // old
-      //   voxel_map_[position]->UpdateOctoTree(p_v);
-      // }
     } else {
       VoxelOctoTree *octo_tree = new VoxelOctoTree(
           max_layer, 0, layer_init_num[0], max_points_num, planer_threshold);
