@@ -314,13 +314,13 @@ void LIVMapper::HandleVIO() {
   }
 
   vio_manager_->ProcessFrame(
-      Lidar_measures_.measures.back().img, pv_list_,
-      voxelmap_manager_->voxel_map_,
+      Lidar_measures_.measures.back().img, pv_list_, voxelmap_manager_->vm_map_,
       Lidar_measures_.last_lio_update_time - first_lidar_time_);
 
   // vio_manager_->ProcessFrame(
-  //     Lidar_measures_.measures.back().img, pv_list_, voxelmap_manager_->vm_map_,
-  //     Lidar_measures_.last_lio_update_time - first_lidar_time_);
+  //     Lidar_measures_.measures.back().img, pv_list_,
+  //     voxelmap_manager_->voxel_map_, Lidar_measures_.last_lio_update_time -
+  //     first_lidar_time_);
 
   if (imu_prop_enable_) {
     ekf_finish_once_ = true;

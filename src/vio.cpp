@@ -261,14 +261,14 @@ void VIOManager::InsertPointIntoFeatureMapLRU(VisualPoint *pt_new) {
                           (int64_t)loc_xyz[2]);
   auto iter = vp_map_.find(position);
   if (iter != vp_map_.end()) {
-    iter->second->second.voxel_points.push_back(pt_new);
-    iter->second->second.count++;
+    iter->second->second->voxel_points.push_back(pt_new);
+    iter->second->second->count++;
     // 更新的放至最前
     vp_data_.splice(vp_data_.begin(), vp_data_, iter->second);
     iter->second = vp_data_.begin();
   } else {
-    VOXEL_POINTS ot = VOXEL_POINTS(0);
-    ot.voxel_points.push_back(pt_new);
+    VOXEL_POINTS *ot = new VOXEL_POINTS(0);
+    ot->voxel_points.push_back(pt_new);
     vp_data_.push_front({position, {ot}});
     vp_map_.insert({position, vp_data_.begin()});
 
@@ -758,7 +758,7 @@ void VIOManager::RetrieveFromVisualSparseMap(
     cv::Mat img, std::vector<pointWithVar> &pv_list,
     const std::unordered_map<VOXEL_LOCATION,
                              typename std::list<VMData>::iterator> &vm_map) {
-  if (vp_map_.size() <= 0) return;
+  if (feat_map_.size() <= 0) return;
   double ts0 = omp_get_wtime();
 
   // resetRvizDisplay();
@@ -819,12 +819,12 @@ void VIOManager::RetrieveFromVisualSparseMap(
   for (auto &iter : sub_feat_map_) {
     VOXEL_LOCATION position = iter.first;
 
-    auto corre_voxel = vp_map_.find(position);
+    auto corre_voxel = feat_map_.find(position);
 
-    if (corre_voxel != vp_map_.end()) {
+    if (corre_voxel != feat_map_.end()) {
       bool voxel_in_fov = false;
       std::vector<VisualPoint *> &voxel_points =
-          corre_voxel->second->second.voxel_points;
+          corre_voxel->second->voxel_points;
       int voxel_num = voxel_points.size();
 
       for (int i = 0; i < voxel_num; i++) {
@@ -893,7 +893,7 @@ void VIOManager::RetrieveFromVisualSparseMap(
           bool voxel_in_fov = false;
 
           std::vector<VisualPoint *> &voxel_points =
-              corre_feat_map->second->second.voxel_points;
+              corre_feat_map->second->second->voxel_points;
           int voxel_num = voxel_points.size();
           if (voxel_num == 0) continue;
 

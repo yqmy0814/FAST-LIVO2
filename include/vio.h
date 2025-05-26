@@ -78,7 +78,7 @@ class VOXEL_POINTS {
     }
   }
 };
-using VPData = std::pair<VOXEL_LOCATION, VOXEL_POINTS>;
+using VPData = std::pair<VOXEL_LOCATION, VOXEL_POINTS *>;
 
 class VIOManager {
  public:
