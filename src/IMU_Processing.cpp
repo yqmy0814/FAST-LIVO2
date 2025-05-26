@@ -14,10 +14,6 @@ which is included as part of this source code package.
 
 #include <omp.h>
 
-const bool time_list(PointXYZIN &x, PointXYZIN &y) {
-  return (x.curvature < y.curvature);
-}
-
 ImuProcess::ImuProcess()
     : eye3d_(M3D::Identity()),
       zero3d_(0, 0, 0),
