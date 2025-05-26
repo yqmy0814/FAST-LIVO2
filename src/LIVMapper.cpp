@@ -906,8 +906,7 @@ void LIVMapper::ImageCbk(const sensor_msgs::ImageConstPtr &msg_in) {
   // }
 
   // Hiliti2022 40Hz
-  if (hilti_en)
-  {
+  if (hilti_en_) {
     static int frame_counter = 0;
     if (++frame_counter % 4 != 0) return;
   }
