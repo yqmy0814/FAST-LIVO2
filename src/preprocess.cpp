@@ -329,7 +329,7 @@ void Preprocess::oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
 
       pl_surf.points.push_back(added_pt);
     }
-    std::sort(pl_surf.points.begin(), pl_surf.points.end(), [](const PointType &a, const PointType &b) {
+    std::sort(pl_surf.points.begin(), pl_surf.points.end(), [](const PointXYZIN &a, const PointXYZIN &b) {
       return a.curvature < b.curvature;
     });
   }
