@@ -97,7 +97,7 @@ class LIVMapper {
 
   bool lidar_map_inited_ = false, pcd_save_en_ = false,
        pub_effect_point_en_ = false, pose_output_en_ = false,
-       ros_driver_fix_en_ = false;
+       ros_driver_fix_en_ = false, hilti_en_ = false;
   int pcd_save_interval_ = -1, pcd_index_ = 0;
   int pub_scan_num_ = 1;
 
