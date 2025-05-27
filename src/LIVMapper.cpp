@@ -12,7 +12,6 @@ which is included as part of this source code package.
 
 #include "LIVMapper.h"
 
-#include <glog/logging.h>
 #include <yaml-cpp/yaml.h>
 
 LIVMapper::LIVMapper(ros::NodeHandle &nh)

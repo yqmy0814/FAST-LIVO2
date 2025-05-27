@@ -93,14 +93,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_subdirectory(vikit_common)
 
-# glog
-find_package(Glog REQUIRED)
-include_directories(${GLOG_INCLUDE_DIR})
-
-# gflags
-find_package(Gflags REQUIRED)
-include_directories(${GFLAGS_INCLUDE_DIR})
-
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -142,8 +134,6 @@ target_link_libraries(fastlivo_mapping
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  glog::glog
-  ${GFLAGS_LIBRARIES}
   ${Boost_LIBRARIES}
   vikit_plugin
 )
