@@ -3,6 +3,7 @@
 1. 将sophus1.24.6和vikit整合至项目内，现在不再需要安装这两项依赖
 2. 添加了LRU内存管理，控制内存增长速度
 3. 使用谷歌风格对部分变量函数等进行了重命名，添加了部分注释
+4. 本分支保留了glog，在程序崩溃时可以便捷地找到出错的位置，便于调试
 
 ## FAST-LIVO2: Fast, Direct LiDAR-Inertial-Visual Odometry
 
@@ -65,7 +66,24 @@ Clone the repository and catkin_make:
 ```
 cd ~/catkin_ws/src
 git clone https://github.com/yqmy0814/FAST-LIVO2
-cd ../
+
+# 安装glog和gflags,已安装则跳过
+cd FAST-LIVO2/thirdparty
+tar -xvf gflags-2.2.2.tar.gz 
+cd gflags-2.2.2 
+mkdir build && cd build 
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=-fPIC .. 
+make -j4 
+sudo make install
+cd ../..
+tar -xvf glog-0.4.0.tar.gz 
+cd glog-0.4.0 
+mkdir build && cd build 
+cmake -DBUILD_SHARED_LIBS=ON .. 
+make -j4 
+sudo make install
+
+cd ~/catkin_ws
 catkin_make
 source ~/catkin_ws/devel/setup.bash
 ```
