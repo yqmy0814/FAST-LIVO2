@@ -15,8 +15,8 @@ which is included as part of this source code package.
 #include <glog/logging.h>
 #include <yaml-cpp/yaml.h>
 
-LIVMapper::LIVMapper(ros::NodeHandle &nh)
-    : ext_t_(0, 0, 0), ext_r_(M3D::Identity()) {
+LIVMapper::LIVMapper(ros::NodeHandle &nh, const std::string &camera_config)
+    : ext_t_(0, 0, 0), ext_r_(M3D::Identity()), camera_config_(camera_config) {
   extrin_t_.assign(3, 0.0);
   extrin_r_.assign(9, 0.0);
   cameraextrin_t_.assign(3, 0.0);
@@ -128,8 +128,7 @@ void LIVMapper::InitializeComponents() {
   // 载入相机参数
   // if (!vk::camera_loader::loadFromRosNs("laserMapping", vio_manager_->cam_))
   //   throw std::runtime_error("Camera model not correctly specified.");
-  std::string file_name = std::string(ROOT_DIR) + "config/camera_pinhole.yaml";
-  YAML::Node camera_config = YAML::LoadFile(file_name);
+  YAML::Node camera_config = YAML::LoadFile(camera_config_);
   if (!vk::camera_loader::loadFromYaml(camera_config, vio_manager_->cam_))
     throw std::runtime_error("Camera model not correctly specified.");
   // 视觉里程计初始化

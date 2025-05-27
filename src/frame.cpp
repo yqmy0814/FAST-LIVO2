@@ -39,6 +39,8 @@ void Frame::initFrame(const cv::Mat &img)
 
   if (img.cols != cam_->width() || img.rows != cam_->height())
   {
+    std::cout << "Image size: " << img.cols << "x" << img.rows << std::endl;
+    std::cout << "Camera model size: " << cam_->width() << "x" << cam_->height() << std::endl;
     throw std::runtime_error("Frame: provided image has not the same size as the camera model");
   }
 

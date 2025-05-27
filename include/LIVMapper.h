@@ -24,7 +24,7 @@ which is included as part of this source code package.
 
 class LIVMapper {
  public:
-  LIVMapper(ros::NodeHandle &nh);
+  LIVMapper(ros::NodeHandle &nh, const std::string &camera_config);
   ~LIVMapper();
   void InitializeSubscribersAndPublishers(ros::NodeHandle &nh,
                                           image_transport::ImageTransport &it);
@@ -41,7 +41,7 @@ class LIVMapper {
 
   bool SyncPackages(LidarMeasureGroup &meas);
   void PropImuOnce(StatesGroup &imu_prop_state, const double dt, V3D acc_avr,
-                     V3D angvel_avr);
+                   V3D angvel_avr);
   void ImuPropCallback(const ros::TimerEvent &e);
   void TransformLidar(const Eigen::Matrix3d rot, const Eigen::Vector3d t,
                       const PointCloudXYZIN::Ptr &input_cloud,
@@ -54,12 +54,12 @@ class LIVMapper {
   void ImuCbk(const sensor_msgs::Imu::ConstPtr &msg_in);
   void ImageCbk(const sensor_msgs::ImageConstPtr &msg_in);
   void PublishImgRGB(const image_transport::Publisher &pubImage,
-                       VIOManagerPtr vio_manager);
+                     VIOManagerPtr vio_manager);
   void PublishFrameWorld(const ros::Publisher &pubLaserCloudFullRes,
-                           VIOManagerPtr vio_manager);
+                         VIOManagerPtr vio_manager);
   void PublishVisualSubMap(const ros::Publisher &pubSubVisualMap);
   void PublishEffectWorld(const ros::Publisher &pubLaserCloudEffect,
-                            const std::vector<PointToPlane> &ptpl_list);
+                          const std::vector<PointToPlane> &ptpl_list);
   void PublishOdometry(const ros::Publisher &pubOdomAftMapped);
   void PublishMavros(const ros::Publisher &mavros_pose_publisher);
   void PublishPath(const ros::Publisher pubPath);
@@ -79,6 +79,7 @@ class LIVMapper {
   SLAM_MODE slam_mode_;
 
   string root_dir_;
+  std::string camera_config_;
   string lid_topic_, imu_topic_, seq_name_, img_topic_;
   V3D ext_t_;
   M3D ext_r_;
