@@ -20,9 +20,10 @@ VIOManager::~VIOManager() {
   delete visual_submap_;
   for (auto &pair : warp_map_) delete pair.second;
   warp_map_.clear();
-  for (auto &pair : feat_map_) delete pair.second;
-  feat_map_.clear();
+  for (auto &pair : vp_map_) delete pair.second->second;
   vp_map_.clear();
+  // for (auto &pair : feat_map_) delete pair.second;
+  // feat_map_.clear();
   vp_data_.clear();
 }
 
@@ -224,6 +225,7 @@ void VIOManager::GetImagePatch(cv::Mat img, V2D pc, float *patch_tmp,
   }
 }
 
+#if 0
 void VIOManager::InsertPointIntoFeatureMap(VisualPoint *pt_new) {
   V3D pt_w(pt_new->pos_[0], pt_new->pos_[1], pt_new->pos_[2]);
   double voxel_size = 0.5;
@@ -246,6 +248,7 @@ void VIOManager::InsertPointIntoFeatureMap(VisualPoint *pt_new) {
     feat_map_[position] = ot;
   }
 }
+#endif
 
 void VIOManager::InsertPointIntoFeatureMapLRU(VisualPoint *pt_new) {
   V3D pt_w(pt_new->pos_[0], pt_new->pos_[1], pt_new->pos_[2]);
@@ -276,6 +279,7 @@ void VIOManager::InsertPointIntoFeatureMapLRU(VisualPoint *pt_new) {
     if (vp_data_.size() >= lru_size_) {
       // 删除一个尾部的数据
       vp_map_.erase(vp_data_.back().first);
+      delete vp_data_.back().second;
       vp_data_.pop_back();
     }
   }
@@ -392,6 +396,7 @@ double VIOManager::CalculateNCC(float *ref_patch, float *cur_patch,
   return numerator / sqrt(demoniator1 * demoniator2 + 1e-10);
 }
 
+#if 0
 void VIOManager::RetrieveFromVisualSparseMap(
     cv::Mat img, std::vector<pointWithVar> &pv_list,
     const std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &voxel_map) {
@@ -499,11 +504,14 @@ void VIOManager::RetrieveFromVisualSparseMap(
     for (int i = 0; i < length_; i++) {
       if (grid_num_[i] == TYPE_MAP || border_flag_[i] == 1) continue;
 
-      // int row = static_cast<int>(i / grid_n_width) * grid_size + grid_size /
-      // 2; int col = (i - static_cast<int>(i / grid_n_width) * grid_n_width) *
+      // int row = static_cast<int>(i / grid_n_width) * grid_size + grid_size
+      /
+      // 2; int col = (i - static_cast<int>(i / grid_n_width) * grid_n_width)
+      *
       // grid_size + grid_size / 2;
 
-      // cv::circle(img_cp, cv::Point2f(col, row), 3, cv::Scalar(255, 255, 0),
+      // cv::circle(img_cp, cv::Point2f(col, row), 3, cv::Scalar(255, 255,
+      0),
       // -1, 8);
 
       // vector<V3D> sample_points_temp;
@@ -547,17 +555,20 @@ void VIOManager::RetrieveFromVisualSparseMap(
             V3D dir(new_frame_->T_f_w_ * pt->pos_);
             if (dir[2] < 0) continue;
             dir.normalize();
-            // if (dir.dot(norm_vec) <= 0.17) continue; // 0.34 70 degree 0.17
+            // if (dir.dot(norm_vec) <= 0.17) continue; // 0.34 70 degree
+            0.17
             // 80 degree 0.08 85 degree
 
             V2D pc(new_frame_->w2c(pt->pos_));
 
             if (new_frame_->cam_->isInFrame(pc.cast<int>(), border_)) {
               // cv::circle(img_cp, cv::Point2f(pc[0], pc[1]), 3,
-              // cv::Scalar(255, 255, 0), -1, 8); sub_map_ray_fov.push_back(pt);
+              // cv::Scalar(255, 255, 0), -1, 8);
+              sub_map_ray_fov.push_back(pt);
 
               voxel_in_fov = true;
-              int index = static_cast<int>(pc[1] / grid_size_) * grid_n_width_ +
+              int index = static_cast<int>(pc[1] / grid_size_) *
+              grid_n_width_ +
                           static_cast<int>(pc[0] / grid_size_);
               grid_num_[index] = TYPE_MAP;
               Eigen::Vector3d obs_vec(new_frame_->pos() - pt->pos_);
@@ -605,7 +616,8 @@ void VIOManager::RetrieveFromVisualSparseMap(
 
       V2D pc(new_frame_->w2c(pt->pos_));
 
-      // cv::circle(img_cp, cv::Point2f(pc[0], pc[1]), 3, cv::Scalar(0, 0, 255),
+      // cv::circle(img_cp, cv::Point2f(pc[0], pc[1]), 3, cv::Scalar(0, 0,
+      255),
       // -1, 8); // Green Sparse Align tracked
 
       V3D pt_cam(new_frame_->w2f(pt->pos_));
@@ -714,7 +726,8 @@ void VIOManager::RetrieveFromVisualSparseMap(
 
       for (int pyramid_level = 0; pyramid_level <= patch_pyrimid_level_ - 1;
            pyramid_level++) {
-        WarpAffine(A_cur_ref_zero, ref_ftr->img_, ref_ftr->px_, ref_ftr->level_,
+        WarpAffine(A_cur_ref_zero, ref_ftr->img_, ref_ftr->px_,
+        ref_ftr->level_,
                    search_level, pyramid_level, patch_size_half_,
                    patch_wrap.data());
       }
@@ -751,14 +764,16 @@ void VIOManager::RetrieveFromVisualSparseMap(
   }
   total_points_ = visual_submap_->voxel_points.size();
 
-  printf("[ VIO ] Retrieve %d points from visual sparse map\n", total_points_);
+  printf("[ VIO ] Retrieve %d points from visual sparse map\n",
+  total_points_);
 }
+#endif
 
-void VIOManager::RetrieveFromVisualSparseMap(
+void VIOManager::RetrieveFromVisualSparseMapLRU(
     cv::Mat img, std::vector<pointWithVar> &pv_list,
     const std::unordered_map<VOXEL_LOCATION,
                              typename std::list<VMData>::iterator> &vm_map) {
-  if (feat_map_.size() <= 0) return;
+  if (vp_map_.size() <= 0) return;
   double ts0 = omp_get_wtime();
 
   // resetRvizDisplay();
@@ -819,12 +834,12 @@ void VIOManager::RetrieveFromVisualSparseMap(
   for (auto &iter : sub_feat_map_) {
     VOXEL_LOCATION position = iter.first;
 
-    auto corre_voxel = feat_map_.find(position);
+    auto corre_voxel = vp_map_.find(position);
 
-    if (corre_voxel != feat_map_.end()) {
+    if (corre_voxel != vp_map_.end()) {
       bool voxel_in_fov = false;
       std::vector<VisualPoint *> &voxel_points =
-          corre_voxel->second->voxel_points;
+          corre_voxel->second->second->voxel_points;
       int voxel_num = voxel_points.size();
 
       for (int i = 0; i < voxel_num; i++) {
@@ -1221,7 +1236,7 @@ void VIOManager::GenerateVisualMapPoints(cv::Mat img,
 
       pt_new->previous_normal_ = pt_new->normal_;
 
-      InsertPointIntoFeatureMap(pt_new);
+      InsertPointIntoFeatureMapLRU(pt_new);
       add += 1;
       // map_cur_frame.push_back(pt_new);
     }
@@ -2282,6 +2297,7 @@ void VIOManager::DumpDataForColmap() {
   cnt++;
 }
 
+#if 0
 void VIOManager::ProcessFrame(
     cv::Mat &img, std::vector<pointWithVar> &pv_list,
     const std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &voxel_map,
@@ -2389,6 +2405,7 @@ void VIOManager::ProcessFrame(
       "\033[1;34m+-------------------------------------------------------------"
       "+\033[0m\n");
 }
+# endif
 
 void VIOManager::ProcessFrame(
     cv::Mat &img, std::vector<pointWithVar> &pv_list,
@@ -2416,7 +2433,7 @@ void VIOManager::ProcessFrame(
 
   double t1 = omp_get_wtime();
   // 提取当前帧的特征
-  RetrieveFromVisualSparseMap(img, pv_list, vm_map);
+  RetrieveFromVisualSparseMapLRU(img, pv_list, vm_map);
 
   double t2 = omp_get_wtime();
 

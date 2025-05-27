@@ -124,13 +124,14 @@ class VIOManager {
   Eigen::MatrixXd K_, H_sub_inv_;
 
   std::ofstream fout_camera_, fout_colmap_;
-  std::unordered_map<VOXEL_LOCATION, VOXEL_POINTS *> feat_map_;
+  // std::unordered_map<VOXEL_LOCATION, VOXEL_POINTS *> feat_map_;
+  std::unordered_map<VOXEL_LOCATION, int> sub_feat_map_;
+  std::unordered_map<int, Warp *> warp_map_;
+
   std::unordered_map<VOXEL_LOCATION, typename std::list<VPData>::iterator>
       vp_map_;
   std::list<VPData> vp_data_;
   int lru_size_ = 1000000;
-  std::unordered_map<VOXEL_LOCATION, int> sub_feat_map_;
-  std::unordered_map<int, Warp *> warp_map_;
   std::vector<VisualPoint *> retrieve_voxel_points_;
   std::vector<pointWithVar> append_voxel_points_;
   FramePtr new_frame_;
@@ -146,10 +147,10 @@ class VIOManager {
 
   void UpdateState(cv::Mat img, int level);
 
-  void ProcessFrame(
-      cv::Mat &img, std::vector<pointWithVar> &pg,
-      const std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &feat_map,
-      double img_time);
+  // void ProcessFrame(
+  //     cv::Mat &img, std::vector<pointWithVar> &pg,
+  //     const std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &feat_map,
+  //     double img_time);
 
   void ProcessFrame(
       cv::Mat &img, std::vector<pointWithVar> &pv_list,
@@ -157,11 +158,11 @@ class VIOManager {
                                typename std::list<VMData>::iterator> &vm_map,
       double img_time);
 
-  void RetrieveFromVisualSparseMap(
-      cv::Mat img, std::vector<pointWithVar> &pg,
-      const std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
+  // void RetrieveFromVisualSparseMap(
+  //     cv::Mat img, std::vector<pointWithVar> &pg,
+  //     const std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
 
-  void RetrieveFromVisualSparseMap(
+  void RetrieveFromVisualSparseMapLRU(
       cv::Mat img, std::vector<pointWithVar> &pv_list,
       const std::unordered_map<VOXEL_LOCATION,
                                typename std::list<VMData>::iterator> &vm_map);
@@ -203,7 +204,7 @@ class VIOManager {
                   const int search_level, const int pyramid_level,
                   const int halfpatch_size, float *patch);
 
-  void InsertPointIntoFeatureMap(VisualPoint *pt_new);
+  // void InsertPointIntoFeatureMap(VisualPoint *pt_new);
 
   void InsertPointIntoFeatureMapLRU(VisualPoint *pt_new);
 
