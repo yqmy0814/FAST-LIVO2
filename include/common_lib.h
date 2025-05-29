@@ -44,7 +44,8 @@ enum LID_TYPE {
   OUST64 = 3,
   L515 = 4,
   XT32 = 5,
-  PANDAR128 = 6
+  PANDAR128 = 6,
+  ROBOSENSE = 7
 };
 enum SLAM_MODE { ONLY_LO = 0, ONLY_LIO = 1, LIVO = 2 };
 enum EKF_STATE { WAIT = 0, VIO = 1, LIO = 2, LO = 3 };
