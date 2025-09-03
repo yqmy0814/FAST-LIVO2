@@ -22,7 +22,7 @@ which is included as part of this source code package.
 
 #include <set>
 
-#include "feature.h"
+#include "image_frame.h"
 #include "voxel_map.h"
 
 struct SubSparseMap {
@@ -100,7 +100,7 @@ class VIOManager {
       has_ref_patch_cache_;
   bool ncc_en_ = false, colmap_output_en_ = false;
 
-  int width_, height_, grid_n_width_, grid_n_height_, length_;
+  int width_, height_, grid_n_width_, grid_n_height_ = 17, length_;
   double image_resize_factor_;
   double fx_, fy_, cx_, cy_;
   int patch_pyrimid_level_, patch_size_, patch_size_total_, patch_size_half_,
@@ -155,8 +155,7 @@ class VIOManager {
   void ProcessFrame(
       cv::Mat &img, std::vector<pointWithVar> &pv_list,
       const std::unordered_map<VOXEL_LOCATION,
-                               typename std::list<VMData>::iterator> &vm_map,
-      double img_time);
+                               typename std::list<VMData>::iterator> &vm_map);
 
   // void RetrieveFromVisualSparseMap(
   //     cv::Mat img, std::vector<pointWithVar> &pg,
@@ -230,6 +229,8 @@ class VIOManager {
   int GetBestSearchLevel(const Eigen::Matrix2d &A_cur_ref, const int max_level);
 
   V3F GetInterpolatedPixel(cv::Mat img, V2D pc);
+
+  SE3 se3_imu_lidar_, se3_lidar_cam_, se3_imu_cam_;
 };
 typedef std::shared_ptr<VIOManager> VIOManagerPtr;
 

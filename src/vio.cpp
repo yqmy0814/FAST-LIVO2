@@ -12,6 +12,8 @@ which is included as part of this source code package.
 
 #include "vio.h"
 
+#include <glog/logging.h>
+
 VIOManager::VIOManager() {
   // downSizeFilter.setLeafSize(0.2, 0.2, 0.2);
 }
@@ -30,12 +32,14 @@ VIOManager::~VIOManager() {
 void VIOManager::SetImuToLidarExtrinsic(const V3D &transl, const M3D &rot) {
   Pli_ = -rot.transpose() * transl;
   Rli_ = rot.transpose();
+  se3_imu_lidar_ = SE3(Mat3ToSO3(Rli_), Pli_);
 }
 
 void VIOManager::SetLidarToCameraExtrinsic(std::vector<double> &R,
                                            std::vector<double> &P) {
   Rcl_ << MAT_FROM_ARRAY(R);
   Pcl_ << VEC_FROM_ARRAY(P);
+  se3_lidar_cam_ = SE3(Mat3ToSO3(Rcl_), Pcl_);
 }
 
 void VIOManager::InitializeVIO() {
@@ -2091,6 +2095,12 @@ void VIOManager::UpdateState(cv::Mat img, int level) {
 
       V3D pf = Rcw_ * pt->pos_ + Pcw_;
       V2D pc = cam_->world2cam(pf);
+      // 检查投影点是否远离图像边界，确保有足够空间计算梯度
+      int total_margin = patch_size_half_ * scale + scale;
+      if (pc[0] < total_margin || pc[0] > (img.cols - total_margin) ||
+          pc[1] < total_margin || pc[1] > (img.rows - total_margin)) {
+        continue;
+      }
       // 计算∂u/∂ẟξ
       ComputeProjectionJacobian(pf, Jdpi);
       M3D p_hat;
@@ -2405,13 +2415,12 @@ void VIOManager::ProcessFrame(
       "\033[1;34m+-------------------------------------------------------------"
       "+\033[0m\n");
 }
-# endif
+#endif
 
 void VIOManager::ProcessFrame(
     cv::Mat &img, std::vector<pointWithVar> &pv_list,
     const std::unordered_map<VOXEL_LOCATION,
-                             typename std::list<VMData>::iterator> &vm_map,
-    double img_time) {
+                             typename std::list<VMData>::iterator> &vm_map) {
   if (width_ != img.cols || height_ != img.rows) {
     if (img.empty()) printf("[ VIO ] Empty Image!\n");
     cv::resize(img, img,
@@ -2425,7 +2434,7 @@ void VIOManager::ProcessFrame(
   // 转灰度图
   if (img.channels() == 3) cv::cvtColor(img, img, CV_BGR2GRAY);
   // 组建相机-图片帧
-  new_frame_.reset(new Frame(cam_, img));
+  new_frame_.reset(new ImageFrame(cam_, img));
 
   UpdateFrameState(*state_);
 

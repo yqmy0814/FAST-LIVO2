@@ -65,7 +65,6 @@ vio:
   inv_expo_cov: 0.1
 
 imu:
-  imu_en: true
   imu_int_frame: 30
   acc_cov: 2.0 # 0.5
   gyr_cov: 0.1 # 0.3

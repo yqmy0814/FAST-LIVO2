@@ -123,7 +123,7 @@ include_directories(
 )
 
 # Add libraries
-add_library(vio src/vio.cpp src/frame.cpp src/visual_point.cpp)
+add_library(vio src/vio.cpp src/image_frame.cpp)
 add_library(lio src/voxel_map.cpp)
 add_library(pre src/preprocess.cpp)
 add_library(imu_proc src/IMU_Processing.cpp)

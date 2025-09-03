@@ -32,21 +32,19 @@ public:
   ~ImuProcess();
 
   void Reset();
-  void Reset(double start_timestamp, const sensor_msgs::ImuConstPtr &lastimu);
-  void set_extrinsic(const V3D &transl, const M3D &rot);
-  void set_extrinsic(const V3D &transl);
-  void set_extrinsic(const MD(4, 4) & T);
-  void set_gyr_cov_scale(const V3D &scaler);
-  void set_acc_cov_scale(const V3D &scaler);
-  void set_gyr_bias_cov(const V3D &b_g);
-  void set_acc_bias_cov(const V3D &b_a);
-  void set_inv_expo_cov(const double &inv_expo);
-  void set_imu_init_frame_num(const int &num);
-  void disable_imu();
-  void disable_gravity_est();
-  void disable_bias_est();
-  void disable_exposure_est();
-  void Process2(LidarMeasureGroup &lidar_meas, StatesGroup &stat, PointCloudXYZIN::Ptr cur_pcl_un_);
+  void SetExtrinsic(const V3D &transl, const M3D &rot);
+  void SetExtrinsic(const V3D &transl);
+  void SetExtrinsic(const MD(4, 4) & T);
+  void SetGyrCovScale(const V3D &scaler);
+  void SetAccCovScale(const V3D &scaler);
+  void SetGyrBiasCov(const V3D &b_g);
+  void SetAccBiasCov(const V3D &b_a);
+  void SetInvExpoCov(const double &inv_expo);
+  void SetImuInitFrameNum(const int &num);
+  void DisableGravityEst();
+  void DisableBiasEst();
+  void DisableExposureEst();
+  void Process(LidarMeasureGroup &lidar_meas, StatesGroup &stat, PointCloudXYZIN::Ptr cur_pcl_un_);
   void UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_inout, PointCloudXYZIN &pcl_out);
 
   std::ofstream fout_imu_;
@@ -66,8 +64,7 @@ public:
   int lidar_type_;
 
 private:
-  void IMU_init(const MeasureGroup &meas, StatesGroup &state, int &N);
-  void Forward_without_imu(LidarMeasureGroup &meas, StatesGroup &state_inout, PointCloudXYZIN &pcl_out);
+  void ImuInit(const MeasureGroup &meas, StatesGroup &state, int &N);
   PointCloudXYZIN pcl_wait_proc_;
   sensor_msgs::ImuConstPtr last_imu_;
   PointCloudXYZIN::Ptr cur_pcl_un_;
@@ -82,7 +79,6 @@ private:
   double time_last_scan_;
   int init_iter_num_ = 1, max_ini_count_ = 20;
   bool b_first_frame_ = true;
-  bool imu_en_ = true;
   bool gravity_est_en_ = true;
   bool ba_bg_est_en_ = true;
   bool exposure_estimate_en_ = true;

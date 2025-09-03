@@ -118,7 +118,7 @@ class LIVMapper {
 
   bool sync_jump_flag_ = false;
 
-  bool lidar_pushed_ = false, imu_en_, gravity_est_en_, flg_reset_ = false,
+  bool lidar_pushed_ = false, gravity_est_en_, flg_reset_ = false,
        ba_bg_est_en_ = true;
   bool dense_map_en = false;
   int img_en_ = 1, imu_int_frame_ = 3;
@@ -129,8 +129,7 @@ class LIVMapper {
   bool raycast_en_ = false;
   int lidar_en_ = 1;
   bool first_frame_finished_ = false;
-  int grid_size_, patch_size_, grid_n_width_, grid_n_height_,
-      patch_pyrimid_level_;
+  int grid_size_, patch_size_, patch_pyrimid_level_;
   double outlier_threshold_;
   double plot_time_;
   int frame_cnt_;
@@ -173,7 +172,7 @@ class LIVMapper {
 
   PreprocessPtr p_pre_;
   ImuProcessPtr p_imu_;
-  VoxelMapManagerPtr voxelmap_manager_;
+  VoxelMapManagerPtr voxel_map_manager_;
   VIOManagerPtr vio_manager_;
 
   ros::Publisher plane_pub_;

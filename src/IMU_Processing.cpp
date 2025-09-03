@@ -49,60 +49,54 @@ void ImuProcess::Reset() {
   cur_pcl_un_.reset(new PointCloudXYZIN());
 }
 
-void ImuProcess::disable_imu() {
-  std::cout << "IMU Disabled !!!!!" << std::endl;
-  imu_en_ = false;
-  imu_need_init_ = false;
-}
-
-void ImuProcess::disable_gravity_est() {
+void ImuProcess::DisableGravityEst() {
   std::cout << "Online Gravity Estimation Disabled !!!!!" << std::endl;
   gravity_est_en_ = false;
 }
 
-void ImuProcess::disable_bias_est() {
+void ImuProcess::DisableBiasEst() {
   std::cout << "Bias Estimation Disabled !!!!!" << std::endl;
   ba_bg_est_en_ = false;
 }
 
-void ImuProcess::disable_exposure_est() {
+void ImuProcess::DisableExposureEst() {
   std::cout << "Online Time Offset Estimation Disabled !!!!!" << std::endl;
   exposure_estimate_en_ = false;
 }
 
-void ImuProcess::set_extrinsic(const MD(4, 4) & T) {
+void ImuProcess::SetExtrinsic(const MD(4, 4) & T) {
   lidar_offset_to_imu_ = T.block<3, 1>(0, 3);
   lidar_rot_to_imu_ = T.block<3, 3>(0, 0);
 }
 
-void ImuProcess::set_extrinsic(const V3D &transl) {
+void ImuProcess::SetExtrinsic(const V3D &transl) {
   lidar_offset_to_imu_ = transl;
   lidar_rot_to_imu_.setIdentity();
 }
 
-void ImuProcess::set_extrinsic(const V3D &transl, const M3D &rot) {
+void ImuProcess::SetExtrinsic(const V3D &transl, const M3D &rot) {
   lidar_offset_to_imu_ = transl;
   lidar_rot_to_imu_ = rot;
 }
 
-void ImuProcess::set_gyr_cov_scale(const V3D &scaler) { cov_gyr_ = scaler; }
+void ImuProcess::SetGyrCovScale(const V3D &scaler) { cov_gyr_ = scaler; }
 
-void ImuProcess::set_acc_cov_scale(const V3D &scaler) { cov_acc_ = scaler; }
+void ImuProcess::SetAccCovScale(const V3D &scaler) { cov_acc_ = scaler; }
 
-void ImuProcess::set_gyr_bias_cov(const V3D &b_g) { cov_bias_gyr_ = b_g; }
+void ImuProcess::SetGyrBiasCov(const V3D &b_g) { cov_bias_gyr_ = b_g; }
 
-void ImuProcess::set_inv_expo_cov(const double &inv_expo) {
+void ImuProcess::SetInvExpoCov(const double &inv_expo) {
   cov_inv_expo_ = inv_expo;
 }
 
-void ImuProcess::set_acc_bias_cov(const V3D &b_a) { cov_bias_acc_ = b_a; }
+void ImuProcess::SetAccBiasCov(const V3D &b_a) { cov_bias_acc_ = b_a; }
 
-void ImuProcess::set_imu_init_frame_num(const int &num) {
+void ImuProcess::SetImuInitFrameNum(const int &num) {
   max_ini_count_ = num;
 }
 
-void ImuProcess::IMU_init(const MeasureGroup &meas, StatesGroup &state_inout,
-                          int &N) {
+void ImuProcess::ImuInit(const MeasureGroup &meas, StatesGroup &state_inout,
+                         int &N) {
   /** 1. initializing the gravity, gyro bias, acc and gyro covariance
    ** 2. normalize the acceleration measurenments to unit gravity **/
   ROS_INFO("IMU Initializing: %.1f %%", double(N) / max_ini_count_ * 100);
@@ -141,85 +135,6 @@ void ImuProcess::IMU_init(const MeasureGroup &meas, StatesGroup &state_inout,
   state_inout.bias_g = zero3d_;  // mean_gyr;
 }
 
-void ImuProcess::Forward_without_imu(LidarMeasureGroup &meas,
-                                     StatesGroup &state_inout,
-                                     PointCloudXYZIN &pcl_out) {
-  pcl_out = *(meas.lidar);
-  // 按时间戳排序
-  const double &pcl_beg_time = meas.lidar_frame_beg_time;
-  sort(pcl_out.points.begin(), pcl_out.points.end(), time_list);
-  const double &pcl_end_time =
-      pcl_beg_time + pcl_out.points.back().curvature / double(1000);
-  meas.last_lio_update_time = pcl_end_time;
-  const double &pcl_end_offset_time =
-      pcl_out.points.back().curvature / double(1000);
-
-  Mat19d F_x, cov_w;
-  double dt = 0;
-
-  if (b_first_frame_) {
-    dt = 0.1;
-    b_first_frame_ = false;
-  } else {
-    dt = pcl_beg_time - time_last_scan_;
-  }
-
-  time_last_scan_ = pcl_beg_time;
-  // 误差状态传播
-  // M3D acc_avr_skew;
-  M3D Exp_f = Exp(state_inout.bias_g, dt);
-
-  F_x.setIdentity();
-  cov_w.setZero();
-
-  F_x.block<3, 3>(0, 0) = Exp(state_inout.bias_g, -dt);
-  F_x.block<3, 3>(0, 10) = eye3d_ * dt;
-  F_x.block<3, 3>(3, 7) = eye3d_ * dt;
-  // F_x.block<3, 3>(6, 0)  = - R_imu * acc_avr_skew * dt;
-  // F_x.block<3, 3>(6, 12) = - R_imu * dt;
-  // F_x.block<3, 3>(6, 15) = Eye3d * dt;
-
-  cov_w.block<3, 3>(10, 10).diagonal() =
-      cov_gyr_ * dt * dt;  // for omega in constant model
-  cov_w.block<3, 3>(7, 7).diagonal() =
-      cov_acc_ * dt * dt;  // for velocity in constant model
-  // cov_w.block<3, 3>(6, 6) =
-  //     R_imu * cov_acc.asDiagonal() * R_imu.transpose() * dt * dt;
-  // cov_w.block<3, 3>(9, 9).diagonal() =
-  //     cov_bias_gyr * dt * dt; // bias gyro covariance
-  // cov_w.block<3, 3>(12, 12).diagonal() =
-  //     cov_bias_acc * dt * dt; // bias acc covariance
-
-  // std::cout << "before propagete:" << state_inout.cov.diagonal().transpose()
-  //           << std::endl;
-  state_inout.cov = F_x * state_inout.cov * F_x.transpose() + cov_w;
-  // std::cout << "cov_w:" << cov_w.diagonal().transpose() << std::endl;
-  // std::cout << "after propagete:" << state_inout.cov.diagonal().transpose()
-  //           << std::endl;
-  state_inout.rot_end = state_inout.rot_end * Exp_f;
-  state_inout.pos_end = state_inout.pos_end + state_inout.vel_end * dt;
-
-  if (lidar_type_ != L515) {
-    auto it_pcl = pcl_out.points.end() - 1;
-    double dt_j = 0.0;
-    for (; it_pcl != pcl_out.points.begin(); it_pcl--) {
-      dt_j = pcl_end_offset_time - it_pcl->curvature / double(1000);
-      M3D R_jk(Exp(state_inout.bias_g, -dt_j));
-      V3D P_j(it_pcl->x, it_pcl->y, it_pcl->z);
-      // Using rotation and translation to un-distort points
-      V3D p_jk;
-      p_jk = -state_inout.rot_end.transpose() * state_inout.vel_end * dt_j;
-
-      V3D P_compensate = R_jk * P_j + p_jk;
-
-      /// save Undistorted points and their rotation
-      it_pcl->x = P_compensate(0);
-      it_pcl->y = P_compensate(1);
-      it_pcl->z = P_compensate(2);
-    }
-  }
-}
-
 void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas,
                               StatesGroup &state_inout,
                               PointCloudXYZIN &pcl_out) {
@@ -233,19 +148,15 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas,
   const double &imu_end_time = v_imu.back()->header.stamp.toSec();
   const double prop_beg_time = last_prop_end_time_;
 
-  const double prop_end_time =
-      lidar_meas.lio_vio_flg == LIO ? meas.lio_time : meas.vio_time;
+  const double prop_end_time = meas.lio_time;
 
   /*** cut lidar point based on the propagation-start time and required
    * propagation-end time ***/
-  if (lidar_meas.lio_vio_flg == LIO) {
-    pcl_wait_proc_.resize(lidar_meas.pcl_proc_cur->points.size());
-    pcl_wait_proc_ = *(lidar_meas.pcl_proc_cur);
-    lidar_meas.lidar_scan_index_now = 0;
-    imu_pose_.push_back(set_pose6d(0.0, acc_s_last_, angvel_last_,
-                                   state_inout.vel_end, state_inout.pos_end,
-                                   state_inout.rot_end));
-  }
+  pcl_wait_proc_.resize(lidar_meas.pcl_proc_cur->points.size());
+  pcl_wait_proc_ = *(lidar_meas.pcl_proc_cur);
+  imu_pose_.push_back(set_pose6d(0.0, acc_s_last_, angvel_last_,
+                                 state_inout.vel_end, state_inout.pos_end,
+                                 state_inout.rot_end));
   /*** Initialize IMU pose ***/
   /*** forward propagation at each imu point ***/
   // 上一帧最后时刻的状态
@@ -266,115 +177,110 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas,
   }
 
   // IMU位姿预测
-  switch (lidar_meas.lio_vio_flg) {
-    case LIO:
-    case VIO:
-      dt = 0;
-      for (int i = 0; i < v_imu.size() - 1; i++) {
-        auto head = v_imu[i];
-        auto tail = v_imu[i + 1];
 
-        if (tail->header.stamp.toSec() < prop_beg_time) continue;
-        // 中值滤波
-        angvel_avr << 0.5 *
-                          (head->angular_velocity.x + tail->angular_velocity.x),
-            0.5 * (head->angular_velocity.y + tail->angular_velocity.y),
-            0.5 * (head->angular_velocity.z + tail->angular_velocity.z);
+  dt = 0;
+  for (int i = 0; i < v_imu.size() - 1; i++) {
+    auto head = v_imu[i];
+    auto tail = v_imu[i + 1];
 
-        acc_avr << 0.5 * (head->linear_acceleration.x +
-                          tail->linear_acceleration.x),
-            0.5 * (head->linear_acceleration.y + tail->linear_acceleration.y),
-            0.5 * (head->linear_acceleration.z + tail->linear_acceleration.z);
+    if (tail->header.stamp.toSec() < prop_beg_time) continue;
+    // 中值滤波
+    angvel_avr << 0.5 * (head->angular_velocity.x + tail->angular_velocity.x),
+        0.5 * (head->angular_velocity.y + tail->angular_velocity.y),
+        0.5 * (head->angular_velocity.z + tail->angular_velocity.z);
 
-        fout_imu_ << std::setw(10) << head->header.stamp.toSec() - first_lidar_time_
-                  << " " << angvel_avr.transpose() << " " << acc_avr.transpose()
-                  << std::endl;
+    acc_avr << 0.5 *
+                   (head->linear_acceleration.x + tail->linear_acceleration.x),
+        0.5 * (head->linear_acceleration.y + tail->linear_acceleration.y),
+        0.5 * (head->linear_acceleration.z + tail->linear_acceleration.z);
 
-        angvel_avr -= state_inout.bias_g;
-        acc_avr = acc_avr * G_m_s2 / mean_acc_.norm() - state_inout.bias_a;
+    fout_imu_ << std::setw(10) << head->header.stamp.toSec() - first_lidar_time_
+              << " " << angvel_avr.transpose() << " " << acc_avr.transpose()
+              << std::endl;
 
-        if (head->header.stamp.toSec() < prop_beg_time) {
-          dt = tail->header.stamp.toSec() - last_prop_end_time_;
-          offs_t = tail->header.stamp.toSec() - prop_beg_time;
-        } else if (i != v_imu.size() - 2) {
-          dt = tail->header.stamp.toSec() - head->header.stamp.toSec();
-          offs_t = tail->header.stamp.toSec() - prop_beg_time;
-        } else {
-          dt = prop_end_time - head->header.stamp.toSec();
-          offs_t = prop_end_time - prop_beg_time;
-        }
+    angvel_avr -= state_inout.bias_g;
+    acc_avr = acc_avr * G_m_s2 / mean_acc_.norm() - state_inout.bias_a;
 
-        dt_all += dt;
+    if (head->header.stamp.toSec() < prop_beg_time) {
+      dt = tail->header.stamp.toSec() - last_prop_end_time_;
+      offs_t = tail->header.stamp.toSec() - prop_beg_time;
+    } else if (i != v_imu.size() - 2) {
+      dt = tail->header.stamp.toSec() - head->header.stamp.toSec();
+      offs_t = tail->header.stamp.toSec() - prop_beg_time;
+    } else {
+      dt = prop_end_time - head->header.stamp.toSec();
+      offs_t = prop_end_time - prop_beg_time;
+    }
 
-        // 状态预测
-        M3D acc_avr_skew;
-        M3D Exp_f = Exp(angvel_avr, dt);
-        acc_avr_skew << SKEW_SYM_MATRX(acc_avr);
+    dt_all += dt;
 
-        F_x.setIdentity(); //雅可比矩阵
-        cov_w.setZero(); //噪声
+    // 状态预测
+    M3D acc_avr_skew;
+    M3D Exp_f = Exp(angvel_avr, dt);
+    acc_avr_skew << SKEW_SYM_MATRX(acc_avr);
 
-        //雅可比矩阵规则 R:0~2, p:3~5, τ:6, v:7~9, bg:10~12, ba:13~15, g:16~18
-        F_x.block<3, 3>(0, 0) = Exp(angvel_avr, -dt);              // R对R
-        if (ba_bg_est_en_) F_x.block<3, 3>(0, 10) = -eye3d_ * dt;  // R对bg
-        // F_x.block<3,3>(3,0)  = R_imu * off_vel_skew * dt; //p对R
-        F_x.block<3, 3>(3, 7) = eye3d_ * dt;                        // p对v
-        F_x.block<3, 3>(7, 0) = -R_imu * acc_avr_skew * dt;         // v对R
-        if (ba_bg_est_en_) F_x.block<3, 3>(7, 13) = -R_imu * dt;    // v对ba
-        if (gravity_est_en_) F_x.block<3, 3>(7, 16) = eye3d_ * dt;  // v对g
+    F_x.setIdentity();  //雅可比矩阵
+    cov_w.setZero();    //噪声
 
-        // tau = 1.0 / (0.25 * sin(2 * CV_PI * 0.5 * imu_time) + 0.75);
-        // F_x(6,6) = 0.25 * 2 * CV_PI * 0.5 * cos(2 * CV_PI * 0.5 * imu_time) *
-        // (-tau*tau); F_x(18,18) = 0.00001;
-        if (exposure_estimate_en_) cov_w(6, 6) = cov_inv_expo_ * dt * dt;
-        cov_w.block<3, 3>(0, 0).diagonal() = cov_gyr_ * dt * dt;
-        cov_w.block<3, 3>(7, 7) =
-            R_imu * cov_acc_.asDiagonal() * R_imu.transpose() * dt * dt;
-        cov_w.block<3, 3>(10, 10).diagonal() =
-            cov_bias_gyr_ * dt * dt;  // bias gyro covariance
-        cov_w.block<3, 3>(13, 13).diagonal() =
-            cov_bias_acc_ * dt * dt;  // bias acc covariance
+    //雅可比矩阵规则 R:0~2, p:3~5, τ:6, v:7~9, bg:10~12, ba:13~15, g:16~18
+    F_x.block<3, 3>(0, 0) = Exp(angvel_avr, -dt);              // R对R
+    if (ba_bg_est_en_) F_x.block<3, 3>(0, 10) = -eye3d_ * dt;  // R对bg
+    // F_x.block<3,3>(3,0)  = R_imu * off_vel_skew * dt; //p对R
+    F_x.block<3, 3>(3, 7) = eye3d_ * dt;                        // p对v
+    F_x.block<3, 3>(7, 0) = -R_imu * acc_avr_skew * dt;         // v对R
+    if (ba_bg_est_en_) F_x.block<3, 3>(7, 13) = -R_imu * dt;    // v对ba
+    if (gravity_est_en_) F_x.block<3, 3>(7, 16) = eye3d_ * dt;  // v对g
 
-        state_inout.cov = F_x * state_inout.cov * F_x.transpose() + cov_w;
-        // state_inout.cov.block<18,18>(0,0) = F_x.block<18,18>(0,0) *
-        // state_inout.cov.block<18,18>(0,0) * F_x.block<18,18>(0,0).transpose()
-        // + cov_w.block<18,18>(0,0);
+    // tau = 1.0 / (0.25 * sin(2 * CV_PI * 0.5 * imu_time) + 0.75);
+    // F_x(6,6) = 0.25 * 2 * CV_PI * 0.5 * cos(2 * CV_PI * 0.5 * imu_time) *
+    // (-tau*tau); F_x(18,18) = 0.00001;
+    if (exposure_estimate_en_) cov_w(6, 6) = cov_inv_expo_ * dt * dt;
+    cov_w.block<3, 3>(0, 0).diagonal() = cov_gyr_ * dt * dt;
+    cov_w.block<3, 3>(7, 7) =
+        R_imu * cov_acc_.asDiagonal() * R_imu.transpose() * dt * dt;
+    cov_w.block<3, 3>(10, 10).diagonal() =
+        cov_bias_gyr_ * dt * dt;  // bias gyro covariance
+    cov_w.block<3, 3>(13, 13).diagonal() =
+        cov_bias_acc_ * dt * dt;  // bias acc covariance
 
-        // tau = tau + 0.25 * 2 * CV_PI * 0.5 * cos(2 * CV_PI * 0.5 * imu_time)
-        // *
-        // (-tau*tau) * dt;
+    state_inout.cov = F_x * state_inout.cov * F_x.transpose() + cov_w;
+    // state_inout.cov.block<18,18>(0,0) = F_x.block<18,18>(0,0) *
+    // state_inout.cov.block<18,18>(0,0) * F_x.block<18,18>(0,0).transpose()
+    // + cov_w.block<18,18>(0,0);
 
-        // tau = 1.0 / (0.25 * sin(2 * CV_PI * 0.5 * imu_time) + 0.75);
+    // tau = tau + 0.25 * 2 * CV_PI * 0.5 * cos(2 * CV_PI * 0.5 * imu_time)
+    // *
+    // (-tau*tau) * dt;
 
-        /* propogation of IMU attitude */
-        R_imu = R_imu * Exp_f;
+    // tau = 1.0 / (0.25 * sin(2 * CV_PI * 0.5 * imu_time) + 0.75);
 
-        /* Specific acceleration (global frame) of IMU */
-        acc_imu = R_imu * acc_avr + state_inout.gravity;
+    /* propogation of IMU attitude */
+    R_imu = R_imu * Exp_f;
 
-        /* propogation of IMU */
-        pos_imu = pos_imu + vel_imu * dt + 0.5 * acc_imu * dt * dt;
+    /* Specific acceleration (global frame) of IMU */
+    acc_imu = R_imu * acc_avr + state_inout.gravity;
 
-        /* velocity of IMU */
-        vel_imu = vel_imu + acc_imu * dt;
+    /* propogation of IMU */
+    pos_imu = pos_imu + vel_imu * dt + 0.5 * acc_imu * dt * dt;
 
-        /* save the poses at each IMU measurements */
-        angvel_last_ = angvel_avr;
-        acc_s_last_ = acc_imu;
+    /* velocity of IMU */
+    vel_imu = vel_imu + acc_imu * dt;
 
-        // cout<<setw(20)<<"offset_t: "<<offs_t<<"tail->header.stamp.toSec():
-        // "<<tail->header.stamp.toSec()<<endl; printf("[ LIO Propagation ]
-        // offs_t: %lf \n", offs_t);
-        imu_pose_.push_back(
-            set_pose6d(offs_t, acc_imu, angvel_avr, vel_imu, pos_imu, R_imu));
-      }
+    /* save the poses at each IMU measurements */
+    angvel_last_ = angvel_avr;
+    acc_s_last_ = acc_imu;
 
-      // unbiased_gyr = V3D(IMUpose.back().gyr[0], IMUpose.back().gyr[1],
-      // IMUpose.back().gyr[2]); cout<<"prop end - start: "<<prop_end_time -
-      // prop_beg_time<<" dt_all: "<<dt_all<<endl;
-      lidar_meas.last_lio_update_time = prop_end_time;
-      break;
+    // cout<<setw(20)<<"offset_t: "<<offs_t<<"tail->header.stamp.toSec():
+    // "<<tail->header.stamp.toSec()<<endl; printf("[ LIO Propagation ]
+    // offs_t: %lf \n", offs_t);
+    imu_pose_.push_back(
+        set_pose6d(offs_t, acc_imu, angvel_avr, vel_imu, pos_imu, R_imu));
   }
+
+  // unbiased_gyr = V3D(IMUpose.back().gyr[0], IMUpose.back().gyr[1],
+  // IMUpose.back().gyr[2]); cout<<"prop end - start: "<<prop_end_time -
+  // prop_beg_time<<" dt_all: "<<dt_all<<endl;
+  lidar_meas.last_lio_update_time = prop_end_time;
 
   state_inout.vel_end = vel_imu;
   state_inout.rot_end = R_imu;
@@ -413,7 +319,6 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas,
   if (pcl_wait_proc_.points.size() < 1) return;
 
   // 点云去畸变
-  if (lidar_meas.lio_vio_flg == LIO) {
     auto it_pcl = pcl_wait_proc_.points.end() - 1;
     M3D extR_Ri(lidar_rot_to_imu_.transpose() *
                 state_inout.rot_end.transpose());
@@ -427,7 +332,6 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas,
       vel_imu << VEC_FROM_ARRAY(head->vel);
       pos_imu << VEC_FROM_ARRAY(head->pos);
       angvel_avr << VEC_FROM_ARRAY(head->gyr);
-
 
       for (; it_pcl->curvature / double(1000) > head->offset_time; it_pcl--) {
         dt = it_pcl->curvature / double(1000) - head->offset_time;
@@ -457,31 +361,24 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas,
     pcl_out = pcl_wait_proc_;
     pcl_wait_proc_.clear();
     imu_pose_.clear();
-  }
 }
 
-void ImuProcess::Process2(LidarMeasureGroup &lidar_meas, StatesGroup &state,
+void ImuProcess::Process(LidarMeasureGroup &lidar_meas, StatesGroup &state,
                           PointCloudXYZIN::Ptr cur_pcl_un_) {
   double t1, t2, t3;
   t1 = omp_get_wtime();
   ROS_ASSERT(lidar_meas.lidar != nullptr);
-  // 无IMU模式
-  if (!imu_en_) {
-    Forward_without_imu(lidar_meas, state, *cur_pcl_un_);
-    return;
-  }
 
   MeasureGroup meas = lidar_meas.measures.back();
 
   if (imu_need_init_) {
-    double pcl_end_time =
-        lidar_meas.lio_vio_flg == LIO ? meas.lio_time : meas.vio_time;
+    double pcl_end_time = meas.lio_time;
 
     if (meas.imu.empty()) {
       return;
     };
     /// The very first lidar frame
-    IMU_init(meas, state, init_iter_num_);
+    ImuInit(meas, state, init_iter_num_);
 
     last_imu_ = meas.imu.back();
 

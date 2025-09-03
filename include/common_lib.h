@@ -47,8 +47,7 @@ enum LID_TYPE {
   PANDAR128 = 6,
   ROBOSENSE = 7
 };
-enum SLAM_MODE { ONLY_LO = 0, ONLY_LIO = 1, LIVO = 2 };
-enum EKF_STATE { WAIT = 0, VIO = 1, LIO = 2, LO = 3 };
+enum SLAM_MODE { ONLY_LIO = 0, LIVO = 1};
 
 struct MeasureGroup {
   double vio_time;
@@ -69,19 +68,15 @@ struct LidarMeasureGroup {
   PointCloudXYZIN::Ptr pcl_proc_cur;
   PointCloudXYZIN::Ptr pcl_proc_next;
   std::deque<struct MeasureGroup> measures;
-  EKF_STATE lio_vio_flg;
-  int lidar_scan_index_now;
 
   LidarMeasureGroup() {
     lidar_frame_beg_time = -0.0;
     lidar_frame_end_time = 0.0;
     last_lio_update_time = -1.0;
-    lio_vio_flg = WAIT;
     this->lidar.reset(new PointCloudXYZIN());
     this->pcl_proc_cur.reset(new PointCloudXYZIN());
     this->pcl_proc_next.reset(new PointCloudXYZIN());
     this->measures.clear();
-    lidar_scan_index_now = 0;
   };
 };
 
@@ -193,7 +188,7 @@ struct StatesGroup {
   M3D rot_end;  // 当前帧最后时刻的估计姿态（旋转矩阵）
   V3D pos_end;  // 当前帧最后时刻的估计位置（世界坐标系）
   V3D vel_end;  // 当前帧最后时刻的估计速度（世界坐标系）
-  double inv_expo_time;  // 当前帧最后时刻的估计逆曝光时间（无缩放）
+  double inv_expo_time;  // 当前帧最后时刻的估计逆曝光时间（相对于第一帧）
   V3D bias_g;            // 陀螺仪偏置
   V3D bias_a;            // 加速度计偏置
   V3D gravity;           // 估计的重力加速度

@@ -21,7 +21,7 @@ time_offset:
 
 preprocess:
   point_filter_num: 1
-  filter_size_surf: 0.1
+  filter_size_surf: 0.1 
   lidar_type: 1 # Livox Avia LiDAR
   scan_line: 6
   blind: 0.8
@@ -39,7 +39,6 @@ vio:
   inv_expo_cov: 0.1
 
 imu:
-  imu_en: true
   imu_int_frame: 30
   acc_cov: 0.5 # 0.2
   gyr_cov: 0.3 # 0.5

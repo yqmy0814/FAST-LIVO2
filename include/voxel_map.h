@@ -191,8 +191,7 @@ class VoxelMapManager {
  public:
   VoxelMapManager() = default;
 
-  VoxelMapManager(
-      VoxelMapConfig &config_setting);
+  VoxelMapManager(VoxelMapConfig &config_setting);
 
   VoxelMapConfig config_setting_;
   int current_frame_id_ = 0;
@@ -203,9 +202,8 @@ class VoxelMapManager {
       vm_map_;
   int lru_size_ = 1000000;
 
-  PointCloudXYZIN::Ptr feats_undistort_;
+  int undistort_size_ = 0;
   PointCloudXYZIN::Ptr feats_down_body_;
-  PointCloudXYZIN::Ptr feats_down_world_;
 
   M3D extR_;
   V3D extT_;
@@ -234,6 +232,8 @@ class VoxelMapManager {
   // void BuildVoxelMap();
 
   void BuildVoxelMapLRU();
+
+  void BuildVoxelMapLRU(const PointCloudXYZIN::Ptr &cloud_world);
 
   V3F RGBFromVoxel(const V3D &input_point);
 

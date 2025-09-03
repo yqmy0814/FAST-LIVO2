@@ -342,9 +342,7 @@ VoxelOctoTree *VoxelOctoTree::Insert(const pointWithVar &pv) {
 VoxelMapManager::VoxelMapManager(VoxelMapConfig &config_setting)
     : config_setting_(config_setting) {
   current_frame_id_ = 0;
-  feats_undistort_.reset(new PointCloudXYZIN());
   feats_down_body_.reset(new PointCloudXYZIN());
-  feats_down_world_.reset(new PointCloudXYZIN());
 };
 
 void VoxelMapManager::StateEstimation(StatesGroup &state_propagat) {
@@ -414,7 +412,7 @@ void VoxelMapManager::StateEstimation(StatesGroup &state_propagat) {
       total_residual += fabs(ptpl_list_[i].dis_to_plane_);
     }
     effct_feat_num_ = ptpl_list_.size();
-    std::cout << "[ LIO ] Raw feature num: " << feats_undistort_->size()
+    std::cout << "[ LIO ] Raw feature num: " << undistort_size_
               << ", downsampled feature num:" << feats_down_size_
               << " effective feature num: " << effct_feat_num_
               << " average residual: " << total_residual / effct_feat_num_
@@ -625,8 +623,8 @@ void VoxelMapManager::BuildVoxelMap() {
 }
 #endif
 
-
-void VoxelMapManager::BuildVoxelMapLRU() {
+void VoxelMapManager::BuildVoxelMapLRU(
+    const PointCloudXYZIN::Ptr &cloud_world) {
   float voxel_size = config_setting_.max_voxel_size_;
   float planer_threshold = config_setting_.planner_threshold_;
   int max_layer = config_setting_.max_layer_;
@@ -634,10 +632,10 @@ void VoxelMapManager::BuildVoxelMapLRU() {
   std::vector<int> layer_init_num = config_setting_.layer_init_num_;
 
   std::vector<pointWithVar> input_points;
-  for (size_t i = 0; i < feats_down_world_->size(); i++) {
+  for (size_t i = 0; i < cloud_world->size(); i++) {
     pointWithVar pv;
-    pv.point_w << feats_down_world_->points[i].x,
-        feats_down_world_->points[i].y, feats_down_world_->points[i].z;
+    pv.point_w << cloud_world->points[i].x, cloud_world->points[i].y,
+        cloud_world->points[i].z;
     V3D point_this(feats_down_body_->points[i].x, feats_down_body_->points[i].y,
                    feats_down_body_->points[i].z);
     M3D var;
@@ -758,7 +756,6 @@ void VoxelMapManager::UpdateVoxelMap(
 }
 #endif
 
-
 void VoxelMapManager::UpdateVoxelMapLRU(
     const std::vector<pointWithVar> &input_points) {
   float voxel_size = config_setting_.max_voxel_size_;
@@ -789,17 +786,6 @@ void VoxelMapManager::UpdateVoxelMapLRU(
           max_layer, 0, layer_init_num[0], max_points_num, planer_threshold);
       vm_data_.push_front({position, {octo_tree}});
       vm_map_.insert({position, vm_data_.begin()});
-      vm_map_[position]->second->quater_length_ = voxel_size / 4;
-      vm_map_[position]->second->voxel_center_[0] =
-          (0.5 + position.x) * voxel_size;
-      vm_map_[position]->second->voxel_center_[1] =
-          (0.5 + position.y) * voxel_size;
-      vm_map_[position]->second->voxel_center_[2] =
-          (0.5 + position.z) * voxel_size;
-      vm_map_[position]->second->temp_points_.push_back(p_v);
-      vm_map_[position]->second->new_points_++;
-      vm_map_[position]->second->layer_init_num_ = layer_init_num;
-      vm_map_[position]->second->UpdateOctoTree(p_v);
 
       // LRU
       if (vm_data_.size() >= lru_size_) {
@@ -808,6 +794,16 @@ void VoxelMapManager::UpdateVoxelMapLRU(
         delete vm_data_.back().second;
         vm_data_.pop_back();
       }
+
+      vm_map_[position]->second->quater_length_ = voxel_size / 4;
+      vm_map_[position]->second->voxel_center_[0] =
+          (0.5 + position.x) * voxel_size;
+      vm_map_[position]->second->voxel_center_[1] =
+          (0.5 + position.y) * voxel_size;
+      vm_map_[position]->second->voxel_center_[2] =
+          (0.5 + position.z) * voxel_size;
+      vm_map_[position]->second->layer_init_num_ = layer_init_num;
+      vm_map_[position]->second->UpdateOctoTree(p_v);
     }
   }
 }
@@ -899,12 +895,10 @@ void VoxelMapManager::BuildResidualListOMP(
 }
 #endif
 
-
 void VoxelMapManager::BuildResidualListLRU(
     std::vector<pointWithVar> &pv_list, std::vector<PointToPlane> &ptpl_list) {
   int max_layer = config_setting_.max_layer_;
   double voxel_size = config_setting_.max_voxel_size_;
-  double sigma_num = config_setting_.sigma_num_;
   std::mutex mylock;
   ptpl_list.clear();
   std::vector<PointToPlane> all_ptpl_list(pv_list.size());
@@ -1087,7 +1081,6 @@ void VoxelMapManager::PubVoxelMap() {
   loop.sleep();
 }
 #endif
-
 
 void VoxelMapManager::PubVoxelMapLRU() {
   double max_trace = 0.25;
