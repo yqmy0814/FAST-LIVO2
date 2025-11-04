@@ -23,7 +23,7 @@ find_package(yaml-cpp REQUIRED)
 # Include dirs
 INCLUDE_DIRECTORIES(
   include
-  ${Eigen_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
 )
 
