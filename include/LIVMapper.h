@@ -47,7 +47,7 @@ class LIVMapper {
                       const PointCloudXYZIN::Ptr &input_cloud,
                       PointCloudXYZIN::Ptr &trans_cloud);
   void PointBodyToWorld(const PointXYZIN &pi, PointXYZIN &po);
-
+  void RGBpointBodyLidarToIMU(PointXYZIN const *const pi, PointXYZIN *const po);
   void RGBpointBodyToWorld(PointXYZIN const *const pi, PointXYZIN *const po);
   void PointCloud2Cbk(const sensor_msgs::PointCloud2::ConstPtr &msg);
   void LivoxCbk(const livox_ros_driver::CustomMsg::ConstPtr &msg_in);
@@ -78,9 +78,9 @@ class LIVMapper {
 
   SLAM_MODE slam_mode_;
 
-  string root_dir_;
+  std::string root_dir_;
   std::string camera_config_;
-  string lid_topic_, imu_topic_, seq_name_, img_topic_;
+  std::string lid_topic_, imu_topic_, seq_name_, img_topic_;
   V3D ext_t_;
   M3D ext_r_;
 
@@ -96,17 +96,17 @@ class LIVMapper {
   double first_lidar_time_ = 0.0;
   double match_time_ = 0, solve_time_ = 0, solve_const_H_time_ = 0;
 
-  bool lidar_map_inited_ = false, pcd_save_en_ = false,
+  bool lidar_map_inited_ = false, pcd_save_en_ = false, img_save_en_ = false,
        pub_effect_point_en_ = false, pose_output_en_ = false,
        ros_driver_fix_en_ = false, hilti_en_ = false;
-  int pcd_save_interval_ = -1, pcd_index_ = 0;
+  int img_save_interval_ = 1,pcd_save_interval_ = -1, pcd_save_type_ = 0;
   int pub_scan_num_ = 1;
 
   StatesGroup imu_propagate_, latest_ekf_state_;
 
   bool new_imu_ = false, state_update_flg_ = false, imu_prop_enable_ = true,
        ekf_finish_once_ = false;
-  deque<sensor_msgs::Imu> prop_imu_buffer_;
+  std::deque<sensor_msgs::Imu> prop_imu_buffer_;
   sensor_msgs::Imu newest_imu_;
   double latest_ekf_time_;
   nav_msgs::Odometry imu_prop_odom_;
@@ -127,23 +127,22 @@ class LIVMapper {
   double exposure_time_init_ = 0.0;
   bool inverse_composition_en_ = false;
   bool raycast_en_ = false;
-  int lidar_en_ = 1;
   bool first_frame_finished_ = false;
   int grid_size_, patch_size_, patch_pyrimid_level_;
   double outlier_threshold_;
   double plot_time_;
   int frame_cnt_;
   double img_time_offset_ = 0.0;
-  deque<PointCloudXYZIN::Ptr> lid_raw_data_buffer_;
-  deque<double> lid_header_time_buffer_;
-  deque<sensor_msgs::Imu::ConstPtr> imu_buffer_;
-  deque<cv::Mat> img_buffer_;
-  deque<double> img_time_buffer_;
-  vector<pointWithVar> pv_list_;
-  vector<double> extrin_t_;
-  vector<double> extrin_r_;
-  vector<double> cameraextrin_t_;
-  vector<double> cameraextrin_r_;
+  std::deque<PointCloudXYZIN::Ptr> lid_raw_data_buffer_;
+  std::deque<double> lid_header_time_buffer_;
+  std::deque<sensor_msgs::Imu::ConstPtr> imu_buffer_;
+  std::deque<cv::Mat> img_buffer_;
+  std::deque<double> img_time_buffer_;
+  std::vector<pointWithVar> pv_list_;
+  std::vector<double> extrin_t_;
+  std::vector<double> extrin_r_;
+  std::vector<double> cameraextrin_t_;
+  std::vector<double> cameraextrin_r_;
   double img_point_cov_;
 
   PointCloudXYZIN::Ptr visual_sub_map_;
@@ -155,13 +154,13 @@ class LIVMapper {
   PointCloudXYZRGB::Ptr pcl_wait_save_;
   PointCloudXYZIN::Ptr pcl_wait_save_intensity_;
 
-  ofstream fout_pre_, fout_out_, fout_pcd_pos_, fout_points_;
+  std::ofstream fout_pre_, fout_out_, fout_visual_pos_, fout_lidar_pos_, fout_points_;
 
   pcl::VoxelGrid<PointXYZIN> downSize_filter_surf_;
 
   V3D euler_cur_;
 
-  LidarMeasureGroup Lidar_measures_;
+  LidarMeasureGroup lidar_measures_;
   StatesGroup state_;
   StatesGroup state_propagat_;
 

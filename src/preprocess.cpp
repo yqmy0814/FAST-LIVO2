@@ -140,7 +140,7 @@ void Preprocess::AviaHandler(
       if (pl_buff_[j].size() <= 5) continue;
       pcl::PointCloud<PointXYZIN> &pl = pl_buff_[j];
       plsize = pl.size();
-      vector<orgtype> &types = typess_[j];
+      std::vector<orgtype> &types = typess_[j];
       types.clear();
       types.resize(plsize);
       plsize--;
@@ -240,7 +240,7 @@ void Preprocess::L515Handler(const sensor_msgs::PointCloud2::ConstPtr &msg) {
     pl_surf_.points.push_back(added_pt);
   }
 
-  std::cout << "pl size:: " << pl_orig.points.size() << endl;
+  std::cout << "pl size:: " << pl_orig.points.size() << std::endl;
   // pub_func(pl_surf, pub_full, msg->header.stamp);
   // pub_func(pl_surf, pub_corn, msg->header.stamp);
 }
@@ -287,7 +287,7 @@ void Preprocess::Oust64Handler(const sensor_msgs::PointCloud2::ConstPtr &msg) {
     for (int j = 0; j < n_scans_; j++) {
       PointCloudXYZIN &pl = pl_buff_[j];
       int linesize = pl.size();
-      vector<orgtype> &types = typess_[j];
+      std::vector<orgtype> &types = typess_[j];
       types.clear();
       types.resize(linesize);
       linesize--;
@@ -431,7 +431,7 @@ void Preprocess::VelodyneHandler(
       PointCloudXYZIN &pl = pl_buff_[j];
       int linesize = pl.size();
       if (linesize < 2) continue;
-      vector<orgtype> &types = typess_[j];
+      std::vector<orgtype> &types = typess_[j];
       types.clear();
       types.resize(linesize);
       linesize--;
@@ -650,7 +650,7 @@ void Preprocess::Xt32Handler(const sensor_msgs::PointCloud2::ConstPtr &msg) {
       PointCloudXYZIN &pl = pl_buff_[j];
       int linesize = pl.size();
       if (linesize < 2) continue;
-      vector<orgtype> &types = typess_[j];
+      std::vector<orgtype> &types = typess_[j];
       types.clear();
       types.resize(linesize);
       linesize--;
@@ -739,7 +739,7 @@ void Preprocess::RobosenseHandler(
 }
 
 void Preprocess::GiveFeature(pcl::PointCloud<PointXYZIN> &pl,
-                              vector<orgtype> &types) {
+                              std::vector<orgtype> &types) {
   int plsize = pl.size();
   int plsize2;
   if (plsize == 0) {
@@ -1002,7 +1002,7 @@ void Preprocess::PubFunc(PointCloudXYZIN &pl, const ros::Time &ct) {
   output.header.stamp = ct;
 }
 
-int Preprocess::PlaneJudge(const PointCloudXYZIN &pl, vector<orgtype> &types,
+int Preprocess::PlaneJudge(const PointCloudXYZIN &pl, std::vector<orgtype> &types,
                             uint i_cur, uint &i_nex,
                             Eigen::Vector3d &curr_direct) {
   double group_dis = dis_a_ * types[i_cur].range + dis_b_;
@@ -1010,7 +1010,7 @@ int Preprocess::PlaneJudge(const PointCloudXYZIN &pl, vector<orgtype> &types,
   // i_nex = i_cur;
 
   double two_dis;
-  vector<double> disarr;
+  std::vector<double> disarr;
   disarr.reserve(20);
 
   for (i_nex = i_cur; i_nex < i_cur + group_size_; i_nex++) {
@@ -1100,7 +1100,7 @@ int Preprocess::PlaneJudge(const PointCloudXYZIN &pl, vector<orgtype> &types,
 }
 
 bool Preprocess::EdgeJumpJudge(const PointCloudXYZIN &pl,
-                                 vector<orgtype> &types, uint i,
+                                 std::vector<orgtype> &types, uint i,
                                  Surround nor_dir) {
   if (nor_dir == 0) {
     if (types[i - 1].range < blind_sqr_ || types[i - 2].range < blind_sqr_) {

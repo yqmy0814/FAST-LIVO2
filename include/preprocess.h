@@ -18,8 +18,6 @@ which is included as part of this source code package.
 
 #include "common_lib.h"
 
-using namespace std;
-
 #define IS_VALID(a) ((abs(a) > 1e8) ? true : false)
 
 enum LiDARFeature {
@@ -151,7 +149,7 @@ class Preprocess {
   // sensor_msgs::PointCloud2::ConstPtr pointcloud;
   PointCloudXYZIN pl_full_, pl_corn_, pl_surf_;
   PointCloudXYZIN pl_buff_[128];  // maximum 128 line lidar
-  vector<orgtype> typess_[128];   // maximum 128 line lidar
+  std::vector<orgtype> typess_[128];   // maximum 128 line lidar
   int lidar_type_, point_filter_num_, n_scans_;
 
   double blind_, blind_sqr_;
@@ -166,11 +164,11 @@ class Preprocess {
   void Pandar128Handler(const sensor_msgs::PointCloud2::ConstPtr &msg);
   void RobosenseHandler(const sensor_msgs::PointCloud2::ConstPtr &msg);
   void L515Handler(const sensor_msgs::PointCloud2::ConstPtr &msg);
-  void GiveFeature(PointCloudXYZIN &pl, vector<orgtype> &types);
+  void GiveFeature(PointCloudXYZIN &pl, std::vector<orgtype> &types);
   void PubFunc(PointCloudXYZIN &pl, const ros::Time &ct);
-  int PlaneJudge(const PointCloudXYZIN &pl, vector<orgtype> &types, uint i,
+  int PlaneJudge(const PointCloudXYZIN &pl, std::vector<orgtype> &types, uint i,
                   uint &i_nex, Eigen::Vector3d &curr_direct);
-  bool EdgeJumpJudge(const PointCloudXYZIN &pl, vector<orgtype> &types,
+  bool EdgeJumpJudge(const PointCloudXYZIN &pl, std::vector<orgtype> &types,
                        uint i, Surround nor_dir);
 
   int group_size_;
