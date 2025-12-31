@@ -112,3 +112,6 @@ pcd_save:
 image_save:
   img_save_en: false
   interval: 1
+
+lru_config:
+  lru_size: 1000000

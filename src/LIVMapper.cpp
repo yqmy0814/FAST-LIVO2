@@ -44,6 +44,11 @@ LIVMapper::LIVMapper(ros::NodeHandle &nh, const std::string &camera_config)
   InitializeComponents();
   path_.header.stamp = ros::Time::now();
   path_.header.frame_id = "camera_init";
+  int lru_size = 1000000;
+  nh.param<int>("lru_config/lru_size", lru_size, 1000000);
+  voxel_map_manager_->lru_size_ = lru_size;
+  vio_manager_->lru_size_ = lru_size;
+  LOG(WARNING) << "LRU size: " << lru_size;
 }
 
 LIVMapper::~LIVMapper() {}

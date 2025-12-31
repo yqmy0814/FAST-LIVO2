@@ -166,12 +166,13 @@ class VoxelOctoTree {
     plane_ptr_ = new VoxelPlane;
   }
 
-  // ~VoxelOctoTree() {
-  //   for (int i = 0; i < 8; i++) {
-  //     delete leaves_[i];
-  //   }
-  //   delete plane_ptr_;
-  // }
+  ~VoxelOctoTree() {
+    for (int i = 0; i < 8; i++) {
+      delete leaves_[i];
+    }
+    delete plane_ptr_;
+  }
+
   void InitPlane(const std::vector<pointWithVar> &points, VoxelPlane *plane);
 
   void InitOctoTree();

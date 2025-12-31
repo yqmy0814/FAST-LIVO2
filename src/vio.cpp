@@ -1129,6 +1129,24 @@ void VIOManager::RetrieveFromVisualSparseMapLRU(
       visual_submap_->errors.push_back(error);
       visual_submap_->warp_patch.push_back(patch_wrap);
       visual_submap_->inv_expo_list.push_back(ref_ftr->inv_expo_time_);
+
+      // LRU update
+      float update_xyz[3];
+      for (int j = 0; j < 3; j++) {
+        update_xyz[j] = pt->pos_[j] / voxel_size;
+        if (update_xyz[j] < 0) {
+          update_xyz[j] -= 1.0;
+        }
+      }
+      VOXEL_LOCATION update_position((int64_t)update_xyz[0],
+                                     (int64_t)update_xyz[1],
+                                     (int64_t)update_xyz[2]);
+      auto update_iter = vp_map_.find(update_position);
+      if (update_iter != vp_map_.end()) {
+        // move to the front of LRU list
+        vp_data_.splice(vp_data_.begin(), vp_data_, update_iter->second);
+        update_iter->second = vp_data_.begin();
+      }
     }
   }
   total_points_ = visual_submap_->voxel_points.size();
